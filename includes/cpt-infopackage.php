@@ -8,8 +8,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function tjobs_register_cpt_infopackage() {
     $labels = array(
-        'name'               => __( 'Infopaketit', 'tapojarvijobs' ),
-        'singular_name'      => __( 'Infopaketti', 'tapojarvijobs' ),
+        'name'               => __( 'TJobs: Infopaketit', 'tapojarvijobs' ),
+        'singular_name'      => __( 'TJobs: Infopaketti', 'tapojarvijobs' ),
+        'menu_name'          => __( 'TJobs Infopaketit', 'tapojarvijobs' ),
         'add_new'            => __( 'Lisää uusi', 'tapojarvijobs' ),
         'add_new_item'       => __( 'Lisää uusi infopaketti', 'tapojarvijobs' ),
         'edit_item'          => __( 'Muokkaa infopakettia', 'tapojarvijobs' ),
