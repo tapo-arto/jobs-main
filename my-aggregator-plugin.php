@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Tapojärvi Jobs Infopaketit
+ * Plugin Name: Tapojärvi Jobs Infopaketit (V2)
  * Description: Tapojärvi Jobs Infopaketit – erillinen lisäosa RSS-synkronointiin, infopaketteihin, REST API:hin, Gutenberg-blokkiin ja Schema.org-merkintöihin.
  * Version: 4.0.0
  * Author: Arto Huhta
@@ -54,7 +54,8 @@ add_action( 'wp_enqueue_scripts', 'tjobs_register_assets' );
 // === Rekisteröi CSS ja JS admin-puolelle ===
 function tjobs_register_admin_assets( $hook ) {
     // Ladataan adminin CSS/JS vain, jos ollaan pluginin asetussivulla
-    if ( 'toplevel_page_tjobs-settings' === $hook ) {
+    $screen = get_current_screen();
+    if ( 'toplevel_page_tjobs-v2-settings' === $hook || ( $screen && 'tjobs_infopackage' === $screen->post_type ) ) {
         // Admin-CSS
         $admin_css = plugin_dir_path(__FILE__) . 'css/admin-minun-aggregator-plugin.css';
         if ( file_exists( $admin_css ) ) {
@@ -94,7 +95,7 @@ function tjobs_is_builder_request() {
     // WP admin -alueessa ei yleensä renderöidä fronttia, mutta Elementor voi käyttää admin-iframeä.
     if ( is_admin() ) {
         // Sallitaan kuitenkin pluginin oma asetussivu normaaliin käyttöön
-        if ( isset($_GET['page']) && $_GET['page'] === 'tjobs-settings' ) {
+        if ( isset($_GET['page']) && $_GET['page'] === 'tjobs-v2-settings' ) {
             return false;
         }
         return true;
