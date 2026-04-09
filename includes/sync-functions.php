@@ -9,12 +9,14 @@ if (!defined('ABSPATH')) {
  * @param string $url URL jonka ankkurit poistetaan
  * @return string Puhdistettu URL
  */
-function map_clean_url($url) {
-    if (empty($url)) {
-        return '';
+if ( ! function_exists( 'map_clean_url' ) ) {
+    function map_clean_url($url) {
+        if (empty($url)) {
+            return '';
+        }
+        $url = preg_replace('/#.*$/', '', $url);
+        return trim($url);
     }
-    $url = preg_replace('/#.*$/', '', $url);
-    return trim($url);
 }
 
 
@@ -24,24 +26,26 @@ function map_clean_url($url) {
  * @param string $title RSS-itemin otsikko.
  * @return string Kielikoodi ('fi', 'en', 'sv', 'it') tai tyhjä merkkijono.
  */
-function map_detect_open_application_language($title) {
-    $title = mb_strtolower(trim(wp_strip_all_tags((string) $title)), 'UTF-8');
+if ( ! function_exists( 'map_detect_open_application_language' ) ) {
+    function map_detect_open_application_language($title) {
+        $title = mb_strtolower(trim(wp_strip_all_tags((string) $title)), 'UTF-8');
 
-    $map = array(
-        'avoin hakemus'         => 'fi',
-        'open application'      => 'en',
-        'öppen ansökan'         => 'sv',
-        'candidatura spontanea' => 'it',
-        'candidatura aperta'    => 'it',
-    );
+        $map = array(
+            'avoin hakemus'         => 'fi',
+            'open application'      => 'en',
+            'öppen ansökan'         => 'sv',
+            'candidatura spontanea' => 'it',
+            'candidatura aperta'    => 'it',
+        );
 
-    foreach ($map as $needle => $lang_code) {
-        if ($needle !== '' && mb_strpos($title, $needle, 0, 'UTF-8') !== false) {
-            return $lang_code;
+        foreach ($map as $needle => $lang_code) {
+            if ($needle !== '' && mb_strpos($title, $needle, 0, 'UTF-8') !== false) {
+                return $lang_code;
+            }
         }
-    }
 
-    return '';
+        return '';
+    }
 }
 
 /**
@@ -50,20 +54,22 @@ function map_detect_open_application_language($title) {
  * @param string $country_name Maan nimi Laura-syötteestä.
  * @return string Maakoodi ('fi', 'se', 'gr', 'it').
  */
-function map_country_name_to_code($country_name) {
-    $map = array(
-        'suomi'   => 'fi',
-        'finland' => 'fi',
-        'ruotsi'  => 'se',
-        'sweden'  => 'se',
-        'sverige' => 'se',
-        'kreikka' => 'gr',
-        'greece'  => 'gr',
-        'italia'  => 'it',
-        'italy'   => 'it',
-    );
-    $lower = mb_strtolower(trim($country_name), 'UTF-8');
-    return isset($map[$lower]) ? $map[$lower] : 'fi';
+if ( ! function_exists( 'map_country_name_to_code' ) ) {
+    function map_country_name_to_code($country_name) {
+        $map = array(
+            'suomi'   => 'fi',
+            'finland' => 'fi',
+            'ruotsi'  => 'se',
+            'sweden'  => 'se',
+            'sverige' => 'se',
+            'kreikka' => 'gr',
+            'greece'  => 'gr',
+            'italia'  => 'it',
+            'italy'   => 'it',
+        );
+        $lower = mb_strtolower(trim($country_name), 'UTF-8');
+        return isset($map[$lower]) ? $map[$lower] : 'fi';
+    }
 }
 
 /**
@@ -71,7 +77,8 @@ function map_country_name_to_code($country_name) {
  *
  * @return array Lisättyjen, poistettujen ja päivitettyjen tiedot.
  */
-function map_sync_feed() {
+if ( ! function_exists( 'map_sync_feed' ) ) {
+    function map_sync_feed() {
     // 1. Haetaan asetukset
     $opts     = my_agg_get_settings();
     $feed_url = isset($opts['feed_url']) ? $opts['feed_url'] : '';
@@ -337,6 +344,7 @@ function map_sync_feed() {
         'updated' => $updated,
     );
 }
+} // end function_exists map_sync_feed
 
 /**
  * Tallentaa tuontilokin
@@ -352,36 +360,38 @@ function map_sync_feed() {
  * @param array|int   $updated
  * @param array       $changes  (ei käytetä enää lokitukseen, jätetään taaksepäin yhteensopivuuden vuoksi)
  */
-function map_log_import($added = array(), $removed = array(), $error = '', $updated = array(), $changes = array()) {
-    $should_log = (!empty($added) || !empty($removed) || !empty($error));
+if ( ! function_exists( 'map_log_import' ) ) {
+    function map_log_import($added = array(), $removed = array(), $error = '', $updated = array(), $changes = array()) {
+        $should_log = (!empty($added) || !empty($removed) || !empty($error));
 
-    // Normalisoi updated count tilastoja varten (jos joku muu kutsuu tätä suoraan)
-    $updated_count = is_array($updated) ? count($updated) : intval($updated);
+        // Normalisoi updated count tilastoja varten (jos joku muu kutsuu tätä suoraan)
+        $updated_count = is_array($updated) ? count($updated) : intval($updated);
 
-    if (!$should_log) {
-        // Ei tehdä varsinaista lokimerkintää
-        return;
+        if (!$should_log) {
+            // Ei tehdä varsinaista lokimerkintää
+            return;
+        }
+
+        $import_log = get_option('my_agg_import_log', array());
+        if (!is_array($import_log)) {
+            $import_log = array();
+        }
+
+        $import_log[] = array(
+            'timestamp' => current_time('mysql'),
+            'added'     => $added,
+            'removed'   => $removed,
+            'updated'   => $updated, // pidetään mukana yhteensopivuuden vuoksi
+            'error'     => $error,
+            'changes'   => array(),  // ei käytössä – pidetään kenttä tyhjänä
+        );
+
+        // Rajoitetaan lokin pituus, esim. 200 merkintää
+        if (count($import_log) > 200) {
+            // Poista vanhin
+            array_shift($import_log);
+        }
+
+        update_option('my_agg_import_log', $import_log);
     }
-
-    $import_log = get_option('my_agg_import_log', array());
-    if (!is_array($import_log)) {
-        $import_log = array();
-    }
-
-    $import_log[] = array(
-        'timestamp' => current_time('mysql'),
-        'added'     => $added,
-        'removed'   => $removed,
-        'updated'   => $updated, // pidetään mukana yhteensopivuuden vuoksi
-        'error'     => $error,
-        'changes'   => array(),  // ei käytössä – pidetään kenttä tyhjänä
-    );
-
-    // Rajoitetaan lokin pituus, esim. 200 merkintää
-    if (count($import_log) > 200) {
-        // Poista vanhin
-        array_shift($import_log);
-    }
-
-    update_option('my_agg_import_log', $import_log);
 }

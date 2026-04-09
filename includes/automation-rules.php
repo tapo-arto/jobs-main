@@ -10,29 +10,31 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $lang   Haluttu kielikoodi
  * @return int Käännetyn infopaketin ID tai alkuperäinen jos käännöstä ei löydy
  */
-function map_get_translated_package_id( $pkg_id, $lang ) {
-    if ( empty( $pkg_id ) || empty( $lang ) ) {
+if ( ! function_exists( 'map_get_translated_package_id' ) ) {
+    function map_get_translated_package_id( $pkg_id, $lang ) {
+        if ( empty( $pkg_id ) || empty( $lang ) ) {
+            return $pkg_id;
+        }
+
+        // Polylang
+        if ( function_exists( 'pll_get_post' ) ) {
+            $translated_id = pll_get_post( $pkg_id, $lang );
+            if ( $translated_id ) {
+                return $translated_id;
+            }
+        }
+
+        // WPML
+        if ( function_exists( 'icl_object_id' ) ) {
+            $translated_id = icl_object_id( $pkg_id, 'map_infopackage', false, $lang );
+            if ( $translated_id ) {
+                return $translated_id;
+            }
+        }
+
+        // Fallback: palauta alkuperäinen
         return $pkg_id;
     }
-
-    // Polylang
-    if ( function_exists( 'pll_get_post' ) ) {
-        $translated_id = pll_get_post( $pkg_id, $lang );
-        if ( $translated_id ) {
-            return $translated_id;
-        }
-    }
-
-    // WPML
-    if ( function_exists( 'icl_object_id' ) ) {
-        $translated_id = icl_object_id( $pkg_id, 'map_infopackage', false, $lang );
-        if ( $translated_id ) {
-            return $translated_id;
-        }
-    }
-
-    // Fallback: palauta alkuperäinen
-    return $pkg_id;
 }
 
 /**
@@ -42,7 +44,8 @@ function map_get_translated_package_id( $pkg_id, $lang ) {
  * @param string $lang        Kielikoodi (null = nykyinen kieli)
  * @return int|null Infopaketin ID tai null jos ei löydy
  */
-function map_resolve_infopackage( $job_post_id, $lang = null ) {
+if ( ! function_exists( 'map_resolve_infopackage' ) ) {
+    function map_resolve_infopackage( $job_post_id, $lang = null ) {
     if ( ! $job_post_id ) {
         return null;
     }
@@ -145,28 +148,32 @@ function map_resolve_infopackage( $job_post_id, $lang = null ) {
 
     return null;
 }
+} // end function_exists map_resolve_infopackage
 
 /**
  * Lisää meta box työpaikka-CPT:lle infopaketin manuaaliseen valintaan
  */
-function map_add_job_infopackage_meta_box() {
-    add_meta_box(
-        'map_job_infopackage_link',
-        __( 'Infopaketti', 'my-aggregator-plugin' ),
-        'map_render_job_infopackage_meta_box',
-        'avoimet_tyopaikat',
-        'side',
-        'default'
-    );
+if ( ! function_exists( 'map_add_job_infopackage_meta_box' ) ) {
+    function map_add_job_infopackage_meta_box() {
+        add_meta_box(
+            'map_job_infopackage_link',
+            __( 'Infopaketti', 'my-aggregator-plugin' ),
+            'map_render_job_infopackage_meta_box',
+            'avoimet_tyopaikat',
+            'side',
+            'default'
+        );
+    }
+    add_action( 'add_meta_boxes', 'map_add_job_infopackage_meta_box' );
 }
-add_action( 'add_meta_boxes', 'map_add_job_infopackage_meta_box' );
 
 /**
  * Renderöi infopaketti-valinta meta box
  *
  * @param WP_Post $post Nykyinen post.
  */
-function map_render_job_infopackage_meta_box( $post ) {
+if ( ! function_exists( 'map_render_job_infopackage_meta_box' ) ) {
+    function map_render_job_infopackage_meta_box( $post ) {
     wp_nonce_field( 'map_save_job_infopackage', 'map_job_infopackage_nonce' );
 
     $linked_package = get_post_meta( $post->ID, '_map_linked_infopackage', true );
@@ -236,39 +243,42 @@ function map_render_job_infopackage_meta_box( $post ) {
         echo '</div>';
     }
 }
+} // end function_exists map_render_job_infopackage_meta_box
 
 /**
  * Tallenna työpaikan infopaketti-linkitys
  *
  * @param int $post_id Post ID.
  */
-function map_save_job_infopackage_meta( $post_id ) {
-    // Tarkista nonce
-    if ( ! isset( $_POST['map_job_infopackage_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['map_job_infopackage_nonce'] ) ), 'map_save_job_infopackage' ) ) {
-        return;
-    }
-
-    // Tarkista autosave
-    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-        return;
-    }
-
-    // Tarkista oikeudet
-    if ( ! current_user_can( 'edit_post', $post_id ) ) {
-        return;
-    }
-
-    // Tallenna linkitys
-    if ( isset( $_POST['map_linked_infopackage'] ) ) {
-        $package_id = sanitize_text_field( wp_unslash( $_POST['map_linked_infopackage'] ) );
-        if ( empty( $package_id ) ) {
-            delete_post_meta( $post_id, '_map_linked_infopackage' );
-        } else {
-            update_post_meta( $post_id, '_map_linked_infopackage', absint( $package_id ) );
+if ( ! function_exists( 'map_save_job_infopackage_meta' ) ) {
+    function map_save_job_infopackage_meta( $post_id ) {
+        // Tarkista nonce
+        if ( ! isset( $_POST['map_job_infopackage_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['map_job_infopackage_nonce'] ) ), 'map_save_job_infopackage' ) ) {
+            return;
         }
 
-        // Päivitä HTML-välimuistin cache bump
-        update_option( 'my_agg_cache_bump', time() );
+        // Tarkista autosave
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+            return;
+        }
+
+        // Tarkista oikeudet
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        // Tallenna linkitys
+        if ( isset( $_POST['map_linked_infopackage'] ) ) {
+            $package_id = sanitize_text_field( wp_unslash( $_POST['map_linked_infopackage'] ) );
+            if ( empty( $package_id ) ) {
+                delete_post_meta( $post_id, '_map_linked_infopackage' );
+            } else {
+                update_post_meta( $post_id, '_map_linked_infopackage', absint( $package_id ) );
+            }
+
+            // Päivitä HTML-välimuistin cache bump
+            update_option( 'my_agg_cache_bump', time() );
+        }
     }
+    add_action( 'save_post_avoimet_tyopaikat', 'map_save_job_infopackage_meta' );
 }
-add_action( 'save_post_avoimet_tyopaikat', 'map_save_job_infopackage_meta' );

@@ -4,38 +4,43 @@ if (!defined('ABSPATH')) {
 }
 
 // Lisää asetussivu
-function map_add_admin_menu() {
-    add_menu_page(
-        'Aggregator Settings',
-        'Aggregator',
-        'manage_options',
-        'my-agg-settings',
-        'map_render_settings_page',
-        'dashicons-rss',
-        80
-    );
+if ( ! function_exists( 'map_add_admin_menu' ) ) {
+    function map_add_admin_menu() {
+        add_menu_page(
+            'Aggregator Settings',
+            'Aggregator',
+            'manage_options',
+            'my-agg-settings',
+            'map_render_settings_page',
+            'dashicons-rss',
+            80
+        );
+    }
+    add_action('admin_menu', 'map_add_admin_menu');
 }
-add_action('admin_menu', 'map_add_admin_menu');
 
 // Hae oletusasetukset
-function my_agg_get_settings() {
-    $defaults = array(
-        'feed_url'               => '',
-        'items_count'            => 10,
-        'forbidden_titles'       => "Avoin hakemus\nOpen application\nÖppen ansökan",
-        'order_by'               => 'date',
-        'order'                  => 'DESC',
-        'update_frequency'       => 'hourly',
-        'link_color'             => '#000000',
-        'description_text_color' => '#666666',
-        'link_hover_color'       => '#ff0000',
-        'default_infopackage'    => 0,
-    );
-    return wp_parse_args(get_option('my_agg_settings', array()), $defaults);
+if ( ! function_exists( 'my_agg_get_settings' ) ) {
+    function my_agg_get_settings() {
+        $defaults = array(
+            'feed_url'               => '',
+            'items_count'            => 10,
+            'forbidden_titles'       => "Avoin hakemus\nOpen application\nÖppen ansökan",
+            'order_by'               => 'date',
+            'order'                  => 'DESC',
+            'update_frequency'       => 'hourly',
+            'link_color'             => '#000000',
+            'description_text_color' => '#666666',
+            'link_hover_color'       => '#ff0000',
+            'default_infopackage'    => 0,
+        );
+        return wp_parse_args(get_option('my_agg_settings', array()), $defaults);
+    }
 }
 
 // Asetussivun näyttö ja käsittely
-function map_render_settings_page() {
+if ( ! function_exists( 'map_render_settings_page' ) ) {
+    function map_render_settings_page() {
     $opts = my_agg_get_settings();
     $import_log = get_option('my_agg_import_log', array());
     if (!is_array($import_log)) { $import_log = array(); }
@@ -318,4 +323,5 @@ function map_render_settings_page() {
     </script>
     <?php
 }
+} // end function_exists map_render_settings_page
 ?>

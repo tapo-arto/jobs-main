@@ -6,21 +6,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Site Health -integraatio: rekisteröi testi lisäosan tilasta.
  */
-function map_add_site_health_tests( $tests ) {
-    $tests['direct']['map_aggregator_status'] = array(
-        'label' => __( 'My Aggregator Plugin -tila', 'my-aggregator-plugin' ),
-        'test'  => 'map_site_health_test_aggregator',
-    );
-    return $tests;
+if ( ! function_exists( 'map_add_site_health_tests' ) ) {
+    function map_add_site_health_tests( $tests ) {
+        $tests['direct']['map_aggregator_status'] = array(
+            'label' => __( 'My Aggregator Plugin -tila', 'my-aggregator-plugin' ),
+            'test'  => 'map_site_health_test_aggregator',
+        );
+        return $tests;
+    }
+    add_filter( 'site_status_tests', 'map_add_site_health_tests' );
 }
-add_filter( 'site_status_tests', 'map_add_site_health_tests' );
 
 /**
  * Suorittaa Site Health -testin aggregaattorin tilalle.
  *
  * @return array Testitulos.
  */
-function map_site_health_test_aggregator() {
+if ( ! function_exists( 'map_site_health_test_aggregator' ) ) {
+    function map_site_health_test_aggregator() {
     $result = array(
         'label'       => __( 'My Aggregator Plugin toimii oikein', 'my-aggregator-plugin' ),
         'status'      => 'good',
@@ -86,3 +89,4 @@ function map_site_health_test_aggregator() {
     $result['description'] = '<p>' . __( 'RSS-syötteen synkronointi toimii normaalisti.', 'my-aggregator-plugin' ) . '</p>';
     return $result;
 }
+} // end function_exists map_site_health_test_aggregator

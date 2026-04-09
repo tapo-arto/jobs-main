@@ -7,7 +7,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * REST API -endpoint työpaikkojen hakuun.
  * Route: my-aggregator/v1/jobs (GET)
  */
-function map_register_rest_routes() {
+if ( ! function_exists( 'map_register_rest_routes' ) ) {
+    function map_register_rest_routes() {
     register_rest_route( 'my-aggregator/v1', '/jobs', array(
         'methods'             => WP_REST_Server::READABLE,
         'callback'            => 'map_rest_get_jobs',
@@ -54,7 +55,8 @@ function map_register_rest_routes() {
         ),
     ) );
 }
-add_action( 'rest_api_init', 'map_register_rest_routes' );
+    add_action( 'rest_api_init', 'map_register_rest_routes' );
+} // end function_exists map_register_rest_routes
 
 /**
  * REST API -callback: palauttaa työpaikat JSON-muodossa.
@@ -62,7 +64,8 @@ add_action( 'rest_api_init', 'map_register_rest_routes' );
  * @param WP_REST_Request $request Pyyntö.
  * @return WP_REST_Response JSON-vastaus.
  */
-function map_rest_get_jobs( WP_REST_Request $request ) {
+if ( ! function_exists( 'map_rest_get_jobs' ) ) {
+    function map_rest_get_jobs( WP_REST_Request $request ) {
     $page     = $request->get_param( 'page' );
     $per_page = $request->get_param( 'per_page' );
     $search   = $request->get_param( 'search' );
@@ -132,6 +135,7 @@ function map_rest_get_jobs( WP_REST_Request $request ) {
         'total_pages' => (int) $query->max_num_pages,
     ), 200 );
 }
+} // end function_exists map_rest_get_jobs
 
 /**
  * REST API -callback: palauttaa yksittäisen työpaikan ja siihen liittyvän infopaketin tiedot.
@@ -139,7 +143,8 @@ function map_rest_get_jobs( WP_REST_Request $request ) {
  * @param WP_REST_Request $request Pyyntö.
  * @return WP_REST_Response|WP_Error JSON-vastaus tai virhe.
  */
-function map_rest_get_job_info( WP_REST_Request $request ) {
+if ( ! function_exists( 'map_rest_get_job_info' ) ) {
+    function map_rest_get_job_info( WP_REST_Request $request ) {
     $post_id = absint( $request->get_param( 'id' ) );
     $lang    = $request->get_param( 'lang' );
 
@@ -169,18 +174,6 @@ function map_rest_get_job_info( WP_REST_Request $request ) {
     $form_url  = get_post_meta( $post_id, 'job_form_url', true );
     $rss_link  = get_post_meta( $post_id, 'original_rss_link', true );
     $apply_url = ! empty( $form_url ) ? $form_url : $rss_link;
-
-    $job_data = array(
-        'id'          => $post_id,
-        'title'       => $post->post_title,
-        'excerpt'     => get_the_excerpt( $post ),
-        'description' => wp_kses_post( $post->post_content ),
-        'apply_url'   => esc_url_raw( $apply_url ),
-        'country'     => get_post_meta( $post_id, 'job_country', true ),
-        'city'        => get_post_meta( $post_id, 'job_city', true ),
-        'job_type'    => get_post_meta( $post_id, 'job_type', true ),
-        'worktime'    => get_post_meta( $post_id, 'job_worktime', true ),
-    );
 
     // Hae infopaketti
     $infopackage_data = null;
@@ -216,15 +209,31 @@ function map_rest_get_job_info( WP_REST_Request $request ) {
                     }
                 }
 
-                // Galleria arrayksi
+                // Galleria arrayksi: palauta {id, url, thumb} objekteja
                 $gallery_arr = array();
                 if ( ! empty( $gallery ) ) {
+                    $gallery_ids = array();
                     if ( is_array( $gallery ) ) {
-                        $gallery_arr = array_values( array_filter( array_map( 'esc_url_raw', $gallery ) ) );
+                        $gallery_ids = $gallery;
                     } elseif ( is_string( $gallery ) ) {
                         $decoded = json_decode( $gallery, true );
                         if ( is_array( $decoded ) ) {
-                            $gallery_arr = array_values( array_filter( array_map( 'esc_url_raw', $decoded ) ) );
+                            $gallery_ids = $decoded;
+                        }
+                    }
+                    foreach ( $gallery_ids as $attachment_id ) {
+                        $attachment_id = absint( $attachment_id );
+                        if ( ! $attachment_id || ! wp_attachment_is_image( $attachment_id ) ) {
+                            continue;
+                        }
+                        $image_url = wp_get_attachment_image_url( $attachment_id, 'large' );
+                        $thumb_url = wp_get_attachment_image_url( $attachment_id, 'medium' );
+                        if ( $image_url ) {
+                            $gallery_arr[] = array(
+                                'id'    => $attachment_id,
+                                'url'   => $image_url,
+                                'thumb' => $thumb_url ? $thumb_url : $image_url,
+                            );
                         }
                     }
                 }
@@ -293,9 +302,14 @@ function map_rest_get_job_info( WP_REST_Request $request ) {
     $i18n = function_exists( 'map_get_js_translations' ) ? map_get_js_translations( $lang ) : array();
 
     return new WP_REST_Response( array(
-        'job'         => $job_data,
-        'infopackage' => $infopackage_data,
+        'id'          => $post_id,
+        'title'       => $post->post_title,
+        'excerpt'     => get_the_excerpt( $post ),
+        'description' => wp_kses_post( $post->post_content ),
+        'apply_url'   => esc_url_raw( $apply_url ),
         'lang'        => $lang,
+        'infopackage' => $infopackage_data,
         'i18n'        => $i18n,
     ), 200 );
 }
+} // end function_exists map_rest_get_job_info

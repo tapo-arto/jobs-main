@@ -8,7 +8,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array Monidimensionaalinen array: [key][lang] => string
  */
-function map_i18n_strings() {
+if ( ! function_exists( 'map_i18n_strings' ) ) {
+    function map_i18n_strings() {
     return array(
         // Modal texts
         'modal.loading' => array(
@@ -201,6 +202,7 @@ function map_i18n_strings() {
         ),
     );
 }
+} // end function_exists map_i18n_strings
 
 /**
  * Hae yksittäinen käännetty merkkijono
@@ -209,9 +211,10 @@ function map_i18n_strings() {
  * @param string $lang Kielikoodi (fi/en/sv/it), jos null käytetään nykyistä kieltä
  * @return string Käännetty merkkijono tai avain jos käännöstä ei löydy
  */
-function map_i18n( $key, $lang = null ) {
-    if ( $lang === null ) {
-        $lang = map_get_current_lang();
+if ( ! function_exists( 'map_i18n' ) ) {
+    function map_i18n( $key, $lang = null ) {
+        if ( $lang === null ) {
+            $lang = map_get_current_lang();
     }
 
     $strings = map_i18n_strings();
@@ -228,6 +231,7 @@ function map_i18n( $key, $lang = null ) {
     // Jos ei löydy mitään, palauta avain
     return $key;
 }
+} // end function_exists map_i18n
 
 /**
  * Tunnista kieli luotettavasti
@@ -235,16 +239,17 @@ function map_i18n( $key, $lang = null ) {
  *
  * @return string Kielikoodi (fi/en/sv/it)
  */
-function map_get_current_lang() {
-    // 1. REST API ?lang= parametri
-    if ( isset( $_GET['lang'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        $lang = sanitize_text_field( wp_unslash( $_GET['lang'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-        if ( in_array( $lang, array( 'fi', 'en', 'sv', 'it' ), true ) ) {
-            return $lang;
+if ( ! function_exists( 'map_get_current_lang' ) ) {
+    function map_get_current_lang() {
+        // 1. REST API ?lang= parametri
+        if ( isset( $_GET['lang'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            $lang = sanitize_text_field( wp_unslash( $_GET['lang'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            if ( in_array( $lang, array( 'fi', 'en', 'sv', 'it' ), true ) ) {
+                return $lang;
+            }
         }
-    }
 
-    // 2. Polylang
+        // 2. Polylang
     if ( function_exists( 'pll_current_language' ) ) {
         $pll_lang = pll_current_language();
         if ( $pll_lang ) {
@@ -272,6 +277,7 @@ function map_get_current_lang() {
     // Oletus: suomi
     return 'fi';
 }
+} // end function_exists map_get_current_lang
 
 /**
  * Normalisoi kielikoodit (esim. en_US → en, fi_FI → fi, it_IT → it)
@@ -279,14 +285,16 @@ function map_get_current_lang() {
  * @param string $code Kielikoodi
  * @return string Normalisoitu koodi
  */
-function map_normalize_lang_code( $code ) {
-    $code = strtolower( substr( (string) $code, 0, 2 ) );
+if ( ! function_exists( 'map_normalize_lang_code' ) ) {
+    function map_normalize_lang_code( $code ) {
+        $code = strtolower( substr( (string) $code, 0, 2 ) );
 
-    if ( in_array( $code, array( 'fi', 'en', 'sv', 'it' ), true ) ) {
-        return $code;
+        if ( in_array( $code, array( 'fi', 'en', 'sv', 'it' ), true ) ) {
+            return $code;
+        }
+
+        return 'fi'; // fallback
     }
-
-    return 'fi'; // fallback
 }
 
 /**
@@ -294,25 +302,27 @@ function map_normalize_lang_code( $code ) {
  *
  * @return string Oletuskielikoodi
  */
-function map_get_default_lang() {
-    // Polylang
-    if ( function_exists( 'pll_default_language' ) ) {
-        $lang = pll_default_language();
-        if ( $lang ) {
-            return map_normalize_lang_code( $lang );
+if ( ! function_exists( 'map_get_default_lang' ) ) {
+    function map_get_default_lang() {
+        // Polylang
+        if ( function_exists( 'pll_default_language' ) ) {
+            $lang = pll_default_language();
+            if ( $lang ) {
+                return map_normalize_lang_code( $lang );
+            }
         }
-    }
 
-    // WPML
-    if ( function_exists( 'icl_get_default_language' ) ) {
-        $lang = icl_get_default_language();
-        if ( $lang ) {
-            return map_normalize_lang_code( $lang );
+        // WPML
+        if ( function_exists( 'icl_get_default_language' ) ) {
+            $lang = icl_get_default_language();
+            if ( $lang ) {
+                return map_normalize_lang_code( $lang );
+            }
         }
-    }
 
-    // Fallback
-    return 'fi';
+        // Fallback
+        return 'fi';
+    }
 }
 
 /**
@@ -320,41 +330,43 @@ function map_get_default_lang() {
  *
  * @return array Kielikoodit arrayna
  */
-function map_get_available_languages() {
-    $languages = array();
+if ( ! function_exists( 'map_get_available_languages' ) ) {
+    function map_get_available_languages() {
+        $languages = array();
 
-    // Polylang
-    if ( function_exists( 'pll_languages_list' ) ) {
-        $pll_langs = pll_languages_list();
-        if ( is_array( $pll_langs ) && ! empty( $pll_langs ) ) {
-            foreach ( $pll_langs as $lang ) {
-                $normalized = map_normalize_lang_code( $lang );
-                if ( ! in_array( $normalized, $languages, true ) ) {
-                    $languages[] = $normalized;
-                }
-            }
-            return $languages;
-        }
-    }
-
-    // WPML
-    if ( function_exists( 'icl_get_languages' ) ) {
-        $wpml_langs = icl_get_languages( 'skip_missing=0' );
-        if ( is_array( $wpml_langs ) && ! empty( $wpml_langs ) ) {
-            foreach ( $wpml_langs as $lang ) {
-                if ( isset( $lang['code'] ) ) {
-                    $normalized = map_normalize_lang_code( $lang['code'] );
+        // Polylang
+        if ( function_exists( 'pll_languages_list' ) ) {
+            $pll_langs = pll_languages_list();
+            if ( is_array( $pll_langs ) && ! empty( $pll_langs ) ) {
+                foreach ( $pll_langs as $lang ) {
+                    $normalized = map_normalize_lang_code( $lang );
                     if ( ! in_array( $normalized, $languages, true ) ) {
                         $languages[] = $normalized;
                     }
                 }
+                return $languages;
             }
-            return $languages;
         }
-    }
 
-    // Fallback: kaikki tuetut kielet
-    return array( 'fi', 'en', 'sv', 'it' );
+        // WPML
+        if ( function_exists( 'icl_get_languages' ) ) {
+            $wpml_langs = icl_get_languages( 'skip_missing=0' );
+            if ( is_array( $wpml_langs ) && ! empty( $wpml_langs ) ) {
+                foreach ( $wpml_langs as $lang ) {
+                    if ( isset( $lang['code'] ) ) {
+                        $normalized = map_normalize_lang_code( $lang['code'] );
+                        if ( ! in_array( $normalized, $languages, true ) ) {
+                            $languages[] = $normalized;
+                        }
+                    }
+                }
+                return $languages;
+            }
+        }
+
+        // Fallback: kaikki tuetut kielet
+        return array( 'fi', 'en', 'sv', 'it' );
+    }
 }
 
 /**
@@ -363,24 +375,26 @@ function map_get_available_languages() {
  * @param string $lang Kielikoodi
  * @return array Käännökset objektina
  */
-function map_get_js_translations( $lang = null ) {
-    if ( $lang === null ) {
-        $lang = map_get_current_lang();
-    }
-
-    $strings      = map_i18n_strings();
-    $translations = array();
-
-    foreach ( $strings as $key => $lang_strings ) {
-        if ( isset( $lang_strings[ $lang ] ) ) {
-            $translations[ $key ] = $lang_strings[ $lang ];
-        } elseif ( isset( $lang_strings['fi'] ) ) {
-            // Fallback suomeen
-            $translations[ $key ] = $lang_strings['fi'];
-        } else {
-            $translations[ $key ] = $key;
+if ( ! function_exists( 'map_get_js_translations' ) ) {
+    function map_get_js_translations( $lang = null ) {
+        if ( $lang === null ) {
+            $lang = map_get_current_lang();
         }
-    }
 
-    return $translations;
+        $strings      = map_i18n_strings();
+        $translations = array();
+
+        foreach ( $strings as $key => $lang_strings ) {
+            if ( isset( $lang_strings[ $lang ] ) ) {
+                $translations[ $key ] = $lang_strings[ $lang ];
+            } elseif ( isset( $lang_strings['fi'] ) ) {
+                // Fallback suomeen
+                $translations[ $key ] = $lang_strings['fi'];
+            } else {
+                $translations[ $key ] = $key;
+            }
+        }
+
+        return $translations;
+    }
 }

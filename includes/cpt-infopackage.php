@@ -6,109 +6,116 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Rekisteröi Infopaketti Custom Post Type
  */
-function map_register_cpt_infopackage() {
-    $labels = array(
-        'name'               => __( 'Infopaketit', 'my-aggregator-plugin' ),
-        'singular_name'      => __( 'Infopaketti', 'my-aggregator-plugin' ),
-        'add_new'            => __( 'Lisää uusi', 'my-aggregator-plugin' ),
-        'add_new_item'       => __( 'Lisää uusi infopaketti', 'my-aggregator-plugin' ),
-        'edit_item'          => __( 'Muokkaa infopakettia', 'my-aggregator-plugin' ),
-        'new_item'           => __( 'Uusi infopaketti', 'my-aggregator-plugin' ),
-        'view_item'          => __( 'Näytä infopaketti', 'my-aggregator-plugin' ),
-        'search_items'       => __( 'Etsi infopaketteja', 'my-aggregator-plugin' ),
-        'not_found'          => __( 'Infopaketteja ei löytynyt', 'my-aggregator-plugin' ),
-        'not_found_in_trash' => __( 'Infopaketteja ei löytynyt roskakorista', 'my-aggregator-plugin' ),
-    );
+if ( ! function_exists( 'map_register_cpt_infopackage' ) ) {
+    function map_register_cpt_infopackage() {
+        $labels = array(
+            'name'               => __( 'Infopaketit', 'my-aggregator-plugin' ),
+            'singular_name'      => __( 'Infopaketti', 'my-aggregator-plugin' ),
+            'add_new'            => __( 'Lisää uusi', 'my-aggregator-plugin' ),
+            'add_new_item'       => __( 'Lisää uusi infopaketti', 'my-aggregator-plugin' ),
+            'edit_item'          => __( 'Muokkaa infopakettia', 'my-aggregator-plugin' ),
+            'new_item'           => __( 'Uusi infopaketti', 'my-aggregator-plugin' ),
+            'view_item'          => __( 'Näytä infopaketti', 'my-aggregator-plugin' ),
+            'search_items'       => __( 'Etsi infopaketteja', 'my-aggregator-plugin' ),
+            'not_found'          => __( 'Infopaketteja ei löytynyt', 'my-aggregator-plugin' ),
+            'not_found_in_trash' => __( 'Infopaketteja ei löytynyt roskakorista', 'my-aggregator-plugin' ),
+        );
 
-    $args = array(
-        'labels'              => $labels,
-        'public'              => false,
-        'show_ui'             => true,
-        'show_in_menu'        => 'my-agg-settings',
-        'show_in_rest'        => true,
-        'supports'            => array( 'title' ),
-        'capability_type'     => 'post',
-        'has_archive'         => false,
-        'hierarchical'        => false,
-        'rewrite'             => false,
-        'menu_icon'           => 'dashicons-info',
-    );
+        $args = array(
+            'labels'              => $labels,
+            'public'              => false,
+            'show_ui'             => true,
+            'show_in_menu'        => 'my-agg-settings',
+            'show_in_rest'        => true,
+            'supports'            => array( 'title' ),
+            'capability_type'     => 'post',
+            'has_archive'         => false,
+            'hierarchical'        => false,
+            'rewrite'             => false,
+            'menu_icon'           => 'dashicons-info',
+        );
 
-    register_post_type( 'map_infopackage', $args );
+        register_post_type( 'map_infopackage', $args );
+    }
+    add_action( 'init', 'map_register_cpt_infopackage' );
 }
-add_action( 'init', 'map_register_cpt_infopackage' );
 
 /**
  * Rekisteröi CPT Polylangin käännettäväksi
  */
-function map_register_infopackage_for_polylang( $post_types ) {
-    if ( ! in_array( 'map_infopackage', $post_types, true ) ) {
-        $post_types[] = 'map_infopackage';
+if ( ! function_exists( 'map_register_infopackage_for_polylang' ) ) {
+    function map_register_infopackage_for_polylang( $post_types ) {
+        if ( ! in_array( 'map_infopackage', $post_types, true ) ) {
+            $post_types[] = 'map_infopackage';
+        }
+        return $post_types;
     }
-    return $post_types;
+    add_filter( 'pll_get_post_types', 'map_register_infopackage_for_polylang', 10, 1 );
 }
-add_filter( 'pll_get_post_types', 'map_register_infopackage_for_polylang', 10, 1 );
 
 /**
  * Lisää meta boxit
  */
-function map_add_infopackage_meta_boxes() {
-    // Infopaketin sisältö
-    add_meta_box(
-        'map_infopackage_content',
-        __( 'Infopaketin sisältö', 'my-aggregator-plugin' ),
-        'map_render_infopackage_content_meta_box',
-        'map_infopackage',
-        'normal',
-        'high'
-    );
+if ( ! function_exists( 'map_add_infopackage_meta_boxes' ) ) {
+    function map_add_infopackage_meta_boxes() {
+        // Infopaketin sisältö
+        add_meta_box(
+            'map_infopackage_content',
+            __( 'Infopaketin sisältö', 'my-aggregator-plugin' ),
+            'map_render_infopackage_content_meta_box',
+            'map_infopackage',
+            'normal',
+            'high'
+        );
 
-    // Media (Video ja Kuvagalleria)
-    add_meta_box(
-        'map_infopackage_media',
-        __( 'Media (Video ja Kuvagalleria)', 'my-aggregator-plugin' ),
-        'map_render_infopackage_media_meta_box',
-        'map_infopackage',
-        'normal',
-        'high'
-    );
+        // Media (Video ja Kuvagalleria)
+        add_meta_box(
+            'map_infopackage_media',
+            __( 'Media (Video ja Kuvagalleria)', 'my-aggregator-plugin' ),
+            'map_render_infopackage_media_meta_box',
+            'map_infopackage',
+            'normal',
+            'high'
+        );
 
-    // Kysymyspatteristo
-    add_meta_box(
-        'map_infopackage_questions',
-        __( 'Kysymyspatteristo', 'my-aggregator-plugin' ),
-        'map_render_infopackage_questions_meta_box',
-        'map_infopackage',
-        'normal',
-        'high'
-    );
+        // Kysymyspatteristo
+        add_meta_box(
+            'map_infopackage_questions',
+            __( 'Kysymyspatteristo', 'my-aggregator-plugin' ),
+            'map_render_infopackage_questions_meta_box',
+            'map_infopackage',
+            'normal',
+            'high'
+        );
 
-    // Automaattinen liitos
-    add_meta_box(
-        'map_infopackage_automation',
-        __( 'Automaattinen liitos', 'my-aggregator-plugin' ),
-        'map_render_infopackage_automation_meta_box',
-        'map_infopackage',
-        'side',
-        'default'
-    );
+        // Automaattinen liitos
+        add_meta_box(
+            'map_infopackage_automation',
+            __( 'Automaattinen liitos', 'my-aggregator-plugin' ),
+            'map_render_infopackage_automation_meta_box',
+            'map_infopackage',
+            'side',
+            'default'
+        );
 
-    // Kieliversio-badge
-    add_meta_box(
-        'map_infopackage_language',
-        __( 'Kieliversio', 'my-aggregator-plugin' ),
-        'map_render_infopackage_language_meta_box',
-        'map_infopackage',
-        'side',
-        'high'
-    );
+        // Kieliversio-badge
+        add_meta_box(
+            'map_infopackage_language',
+            __( 'Kieliversio', 'my-aggregator-plugin' ),
+            'map_render_infopackage_language_meta_box',
+            'map_infopackage',
+            'side',
+            'high'
+        );
+    }
+    add_action( 'add_meta_boxes', 'map_add_infopackage_meta_boxes' );
 }
-add_action( 'add_meta_boxes', 'map_add_infopackage_meta_boxes' );
 
 /**
  * Renderöi kieliversio-badge
  */
-function map_render_infopackage_language_meta_box( $post ) {
+if ( ! function_exists( 'map_render_infopackage_language_meta_box' ) ) {
+    function map_render_infopackage_language_meta_box( $post ) {
     $current_lang = 'FI'; // default
     
     // Polylang
@@ -130,11 +137,13 @@ function map_render_infopackage_language_meta_box( $post ) {
     echo esc_html( map_i18n( 'admin.language_version' ) ) . ': <span style="color:#2271b1;">' . esc_html( $current_lang ) . '</span>';
     echo '</div>';
 }
+} // end function_exists map_render_infopackage_language_meta_box
 
 /**
  * Renderöi sisältö meta box
  */
-function map_render_infopackage_content_meta_box( $post ) {
+if ( ! function_exists( 'map_render_infopackage_content_meta_box' ) ) {
+    function map_render_infopackage_content_meta_box( $post ) {
     wp_nonce_field( 'map_save_infopackage', 'map_infopackage_nonce' );
 
     $intro         = get_post_meta( $post->ID, '_map_info_intro', true );
@@ -207,11 +216,13 @@ function map_render_infopackage_content_meta_box( $post ) {
     </script>
     <?php
 }
+} // end function_exists map_render_infopackage_content_meta_box
 
 /**
  * Renderöi media (video ja galleria) meta box
  */
-function map_render_infopackage_media_meta_box( $post ) {
+if ( ! function_exists( 'map_render_infopackage_media_meta_box' ) ) {
+    function map_render_infopackage_media_meta_box( $post ) {
     $video_url = get_post_meta( $post->ID, '_map_info_video_url', true );
     $gallery   = get_post_meta( $post->ID, '_map_info_gallery', true );
     
@@ -302,11 +313,13 @@ function map_render_infopackage_media_meta_box( $post ) {
     </script>
     <?php
 }
+} // end function_exists map_render_infopackage_media_meta_box
 
 /**
  * Renderöi kysymyspatteristo meta box
  */
-function map_render_infopackage_questions_meta_box( $post ) {
+if ( ! function_exists( 'map_render_infopackage_questions_meta_box' ) ) {
+    function map_render_infopackage_questions_meta_box( $post ) {
     $questions = get_post_meta( $post->ID, '_map_info_questions', true );
     if ( ! is_array( $questions ) ) {
         $questions = array();
@@ -358,11 +371,13 @@ function map_render_infopackage_questions_meta_box( $post ) {
     </script>
     <?php
 }
+} // end function_exists map_render_infopackage_questions_meta_box
 
 /**
  * Renderöi yksittäinen kysymysrivi
  */
-function map_render_question_row( $index, $data = array() ) {
+if ( ! function_exists( 'map_render_question_row' ) ) {
+    function map_render_question_row( $index, $data = array() ) {
     $question = isset( $data['question'] ) ? $data['question'] : '';
     $type     = isset( $data['type'] ) ? $data['type'] : 'text';
     $options  = isset( $data['options'] ) ? $data['options'] : '';
@@ -430,29 +445,33 @@ function map_render_question_row( $index, $data = array() ) {
     </div>
     <?php
 }
+} // end function_exists map_render_question_row
 
 /**
  * AJAX handler kysymysrivin renderöintiin
  */
-function map_ajax_render_question_row() {
-    $index = isset( $_POST['index'] ) ? absint( $_POST['index'] ) : 0;
-    map_render_question_row( $index );
-    wp_die();
+if ( ! function_exists( 'map_ajax_render_question_row' ) ) {
+    function map_ajax_render_question_row() {
+        $index = isset( $_POST['index'] ) ? absint( $_POST['index'] ) : 0;
+        map_render_question_row( $index );
+        wp_die();
+    }
+    add_action( 'wp_ajax_map_render_question_row', 'map_ajax_render_question_row' );
 }
-add_action( 'wp_ajax_map_render_question_row', 'map_ajax_render_question_row' );
 
 /**
  * Renderöi automaattinen liitos meta box
  */
-function map_render_infopackage_automation_meta_box( $post ) {
-    $auto_location = get_post_meta( $post->ID, '_map_info_auto_location', true );
-    $auto_keywords = get_post_meta( $post->ID, '_map_info_auto_keywords', true );
+if ( ! function_exists( 'map_render_infopackage_automation_meta_box' ) ) {
+    function map_render_infopackage_automation_meta_box( $post ) {
+        $auto_location = get_post_meta( $post->ID, '_map_info_auto_location', true );
+        $auto_keywords = get_post_meta( $post->ID, '_map_info_auto_keywords', true );
 
-    ?>
-    <p>
-        <label><?php _e( 'Sijainti sisältää (pilkulla erotetut)', 'my-aggregator-plugin' ); ?></label><br>
-        <input type="text" name="map_info_auto_location" value="<?php echo esc_attr( $auto_location ); ?>" style="width:100%;" placeholder="Helsinki, Espoo, Vantaa" />
-    </p>
+        ?>
+        <p>
+            <label><?php _e( 'Sijainti sisältää (pilkulla erotetut)', 'my-aggregator-plugin' ); ?></label><br>
+            <input type="text" name="map_info_auto_location" value="<?php echo esc_attr( $auto_location ); ?>" style="width:100%;" placeholder="Helsinki, Espoo, Vantaa" />
+        </p>
     <p>
         <label><?php _e( 'Otsikko sisältää (pilkulla erotetut)', 'my-aggregator-plugin' ); ?></label><br>
         <input type="text" name="map_info_auto_keywords" value="<?php echo esc_attr( $auto_keywords ); ?>" style="width:100%;" placeholder="kehittäjä, designer" />
@@ -462,11 +481,13 @@ function map_render_infopackage_automation_meta_box( $post ) {
     </p>
     <?php
 }
+} // end function_exists map_render_infopackage_automation_meta_box
 
 /**
  * Tallenna infopaketin meta datat
  */
-function map_save_infopackage_meta( $post_id ) {
+if ( ! function_exists( 'map_save_infopackage_meta' ) ) {
+    function map_save_infopackage_meta( $post_id ) {
     // Tarkista nonce
     if ( ! isset( $_POST['map_infopackage_nonce'] ) || ! wp_verify_nonce( $_POST['map_infopackage_nonce'], 'map_save_infopackage' ) ) {
         return;
@@ -553,4 +574,5 @@ function map_save_infopackage_meta( $post_id ) {
     // Päivitä HTML-välimuistin cache bump
     update_option( 'my_agg_cache_bump', time() );
 }
-add_action( 'save_post_map_infopackage', 'map_save_infopackage_meta' );
+    add_action( 'save_post_map_infopackage', 'map_save_infopackage_meta' );
+} // end function_exists map_save_infopackage_meta

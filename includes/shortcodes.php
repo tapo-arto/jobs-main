@@ -3,15 +3,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Rekisteröi lyhytkoodit
-add_shortcode('my_jobs_list', 'map_jobs_list_shortcode');
-add_shortcode('my_jobs_by_country', 'map_jobs_by_country_shortcode');
-
 /**
  * Lataa modal-assettit (CSS + JS) fronttiin.
  * Kutsutaan shortcodeista tarpeen mukaan.
  */
-function map_enqueue_modal_assets() {
+if ( ! function_exists( 'map_enqueue_modal_assets' ) ) {
+    function map_enqueue_modal_assets() {
     $css_path = plugin_dir_path( dirname( __FILE__ ) ) . 'css/modal-infopackage.css';
     if ( file_exists( $css_path ) ) {
         wp_enqueue_style(
@@ -52,6 +49,7 @@ function map_enqueue_modal_assets() {
         );
     }
 }
+} // end function_exists map_enqueue_modal_assets
 
 
 /**
@@ -60,7 +58,8 @@ function map_enqueue_modal_assets() {
  * @param string $lang_code Nykyinen kielikoodi.
  * @return string
  */
-function map_get_open_application_url_for_language($lang_code = '') {
+if ( ! function_exists( 'map_get_open_application_url_for_language' ) ) {
+    function map_get_open_application_url_for_language($lang_code = '') {
     $lang_code = sanitize_key((string) $lang_code);
     if ($lang_code === '') {
         $lang_code = 'fi';
@@ -93,6 +92,7 @@ function map_get_open_application_url_for_language($lang_code = '') {
     $legacy_url = get_option('my_agg_open_application_url', '');
     return is_string($legacy_url) ? $legacy_url : '';
 }
+} // end function_exists map_get_open_application_url_for_language
 
 /**
  * Lyhytkoodin logiikka
@@ -100,7 +100,8 @@ function map_get_open_application_url_for_language($lang_code = '') {
  * @param array $atts Lyhytkoodin attribuutit
  * @return string Työpaikkalistaus HTML-muodossa
  */
-function map_jobs_list_shortcode($atts) {
+if ( ! function_exists( 'map_jobs_list_shortcode' ) ) {
+    function map_jobs_list_shortcode($atts) {
     // Lataa modal-assettit
     map_enqueue_modal_assets();
 
@@ -263,6 +264,8 @@ function map_jobs_list_shortcode($atts) {
 
     return $output;
 }
+    add_shortcode('my_jobs_list', 'map_jobs_list_shortcode');
+} // end function_exists map_jobs_list_shortcode
 
 /**
  * Lyhytkoodin logiikka: maakohtainen ryhmittely moderneilla korteilla
@@ -270,7 +273,8 @@ function map_jobs_list_shortcode($atts) {
  * @param array $atts Lyhytkoodin attribuutit
  * @return string Maakohtainen työpaikkalistaus HTML-muodossa
  */
-function map_jobs_by_country_shortcode($atts) {
+if ( ! function_exists( 'map_jobs_by_country_shortcode' ) ) {
+    function map_jobs_by_country_shortcode($atts) {
     // Lataa modal-assettit
     map_enqueue_modal_assets();
 
@@ -487,3 +491,5 @@ function map_jobs_by_country_shortcode($atts) {
 
     return $output;
 }
+    add_shortcode('my_jobs_by_country', 'map_jobs_by_country_shortcode');
+} // end function_exists map_jobs_by_country_shortcode
