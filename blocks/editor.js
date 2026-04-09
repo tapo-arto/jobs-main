@@ -7,8 +7,8 @@
     var ToggleControl = components.ToggleControl;
     var SelectControl = components.SelectControl;
 
-    blocks.registerBlockType( 'my-aggregator/jobs-list', {
-        title: __( 'Jobs List', 'my-aggregator-plugin' ),
+    blocks.registerBlockType( 'tjobs/jobs-list', {
+        title: __( 'Jobs List', 'tapojarvijobs' ),
         icon: 'list-view',
         category: 'widgets',
         attributes: {
@@ -20,32 +20,32 @@
             var attributes = props.attributes;
             return [
                 el( InspectorControls, { key: 'inspector' },
-                    el( PanelBody, { title: __( 'Asetukset', 'my-aggregator-plugin' ), initialOpen: true },
+                    el( PanelBody, { title: __( 'Asetukset', 'tapojarvijobs' ), initialOpen: true },
                         el( TextControl, {
-                            label: __( 'Näytettävien töiden määrä', 'my-aggregator-plugin' ),
+                            label: __( 'Näytettävien töiden määrä', 'tapojarvijobs' ),
                             type: 'number',
                             value: attributes.itemsCount,
                             onChange: function ( val ) { props.setAttributes( { itemsCount: parseInt( val, 10 ) } ); },
                         } ),
                         el( ToggleControl, {
-                            label: __( 'Näytä hakukenttä', 'my-aggregator-plugin' ),
+                            label: __( 'Näytä hakukenttä', 'tapojarvijobs' ),
                             checked: attributes.showSearch,
                             onChange: function ( val ) { props.setAttributes( { showSearch: val } ); },
                         } ),
                         el( SelectControl, {
-                            label: __( 'Asettelu', 'my-aggregator-plugin' ),
+                            label: __( 'Asettelu', 'tapojarvijobs' ),
                             value: attributes.layout,
                             options: [
-                                { label: __( 'Lista', 'my-aggregator-plugin' ), value: 'list' },
-                                { label: __( 'Ruudukko', 'my-aggregator-plugin' ), value: 'grid' },
-                                { label: __( 'Kortti', 'my-aggregator-plugin' ), value: 'card' },
+                                { label: __( 'Lista', 'tapojarvijobs' ), value: 'list' },
+                                { label: __( 'Ruudukko', 'tapojarvijobs' ), value: 'grid' },
+                                { label: __( 'Kortti', 'tapojarvijobs' ), value: 'card' },
                             ],
                             onChange: function ( val ) { props.setAttributes( { layout: val } ); },
                         } )
                     )
                 ),
-                el( 'div', { key: 'preview', className: 'my-aggregator-block-preview' },
-                    el( 'p', {}, __( 'Avoimet työpaikat – esikatselu', 'my-aggregator-plugin' ) )
+                el( 'div', { key: 'preview', className: 'tjobs-block-preview' },
+                    el( 'p', {}, __( 'Avoimet työpaikat – esikatselu', 'tapojarvijobs' ) )
                 ),
             ];
         },

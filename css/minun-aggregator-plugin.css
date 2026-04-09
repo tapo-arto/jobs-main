@@ -1,27 +1,27 @@
-.my-job-list {
+.tjobs-job-list {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-.my-job-list li {
+.tjobs-job-list li {
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.25);
 }
 
 /* Huomaa: Värejä ei välttämättä tarvita, jos ne tullaan inline-tyylistä. */
-.my-job-list a {
+.tjobs-job-list a {
     text-decoration: none; 
     font-weight: bold; 
     font-size: 18px;
 }
 
-.my-job-list a:hover {
+.tjobs-job-list a:hover {
     text-decoration: none;
 }
 
-.my-job-list .description {
+.tjobs-job-list .description {
     font-size: 0.8rem; 
     font-weight: 300; 
     margin-top: 5px;
@@ -30,127 +30,127 @@
 /* === Maakohtainen listaus – Moderni dual-theme (WCAG AA/AAA) === */
 
 /* ── Perusmuuttujat ── */
-.map-jobs-by-country {
-    --map-brand: #FEE000;
-    --map-brand-hover: #FEC300;
-    --map-radius: 12px;
+.tjobs-jobs-by-country {
+    --tjobs-brand: #FEE000;
+    --tjobs-brand-hover: #FEC300;
+    --tjobs-radius: 12px;
     max-width: 900px;
     margin: 0 auto;
     font-family: inherit;
 }
 
 /* ── TUMMA TEEMA ── */
-.map-theme-dark {
+.tjobs-theme-dark {
     /* Ympäröivä tausta on musta/tumma (teemasta) */
-    --map-heading-color: #ffffff;
-    --map-heading-muted: rgba(255, 255, 255, 0.70);
-    --map-section-border: rgba(255, 255, 255, 0.15);
+    --tjobs-heading-color: #ffffff;
+    --tjobs-heading-muted: rgba(255, 255, 255, 0.70);
+    --tjobs-section-border: rgba(255, 255, 255, 0.15);
 
     /* Kortit – AINA valkoisia saavutettavuuden vuoksi */
-    --map-card-bg: #ffffff;
-    --map-card-border: rgba(0, 0, 0, 0.08);
-    --map-card-text: #1a1a1a;
-    --map-card-muted: #6b7280;
-    --map-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-    --map-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.35);
-    --map-card-hover-border: var(--map-brand);
+    --tjobs-card-bg: #ffffff;
+    --tjobs-card-border: rgba(0, 0, 0, 0.08);
+    --tjobs-card-text: #1a1a1a;
+    --tjobs-card-muted: #6b7280;
+    --tjobs-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    --tjobs-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --tjobs-card-hover-border: var(--tjobs-brand);
 
     /* Tagit – tumma teksti vaalealla pohjalla (kortin sisällä) */
-    --map-tag-color: #374151;
-    --map-tag-bg: #f3f4f6;
-    --map-tag-border: #e5e7eb;
+    --tjobs-tag-color: #374151;
+    --tjobs-tag-bg: #f3f4f6;
+    --tjobs-tag-border: #e5e7eb;
 
     /* Hae paikkaa -nappi */
-    --map-btn-bg: var(--map-brand);
-    --map-btn-text: #000000;
-    --map-btn-hover-bg: var(--map-brand-hover);
+    --tjobs-btn-bg: var(--tjobs-brand);
+    --tjobs-btn-text: #000000;
+    --tjobs-btn-hover-bg: var(--tjobs-brand-hover);
 
     /* Country count badge */
-    --map-count-color: var(--map-brand);
-    --map-count-bg: rgba(254, 224, 0, 0.10);
-    --map-count-border: rgba(254, 224, 0, 0.25);
+    --tjobs-count-color: var(--tjobs-brand);
+    --tjobs-count-bg: rgba(254, 224, 0, 0.10);
+    --tjobs-count-border: rgba(254, 224, 0, 0.25);
 
     /* Tyhjän maan teksti */
-    --map-empty-color: rgba(255, 255, 255, 0.70);
+    --tjobs-empty-color: rgba(255, 255, 255, 0.70);
 
     /* CTA-banneri – vaalea pohja tummalla teemalla */
-    --map-cta-bg: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
-    --map-cta-text: #1a1a1a;
-    --map-cta-muted: #4b5563;
-    --map-cta-btn-bg: #1a1a1a;
-    --map-cta-btn-text: #ffffff;
-    --map-cta-btn-hover-bg: #333333;
+    --tjobs-cta-bg: linear-gradient(135deg, #fafafa 0%, #f0f0f0 100%);
+    --tjobs-cta-text: #1a1a1a;
+    --tjobs-cta-muted: #4b5563;
+    --tjobs-cta-btn-bg: #1a1a1a;
+    --tjobs-cta-btn-text: #ffffff;
+    --tjobs-cta-btn-hover-bg: #333333;
 }
 
 /* ── VAALEA TEEMA ── */
-.map-theme-light {
+.tjobs-theme-light {
     /* Ympäröivä tausta on valkoinen/vaalea (teemasta) */
-    --map-heading-color: #1a1a1a;
-    --map-heading-muted: #6b7280;
-    --map-section-border: #e5e7eb;
+    --tjobs-heading-color: #1a1a1a;
+    --tjobs-heading-muted: #6b7280;
+    --tjobs-section-border: #e5e7eb;
 
     /* Kortit – AINA valkoisia, samat kuin tummassa */
-    --map-card-bg: #ffffff;
-    --map-card-border: #e5e7eb;
-    --map-card-text: #1a1a1a;
-    --map-card-muted: #6b7280;
-    --map-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --map-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-    --map-card-hover-border: var(--map-brand);
+    --tjobs-card-bg: #ffffff;
+    --tjobs-card-border: #e5e7eb;
+    --tjobs-card-text: #1a1a1a;
+    --tjobs-card-muted: #6b7280;
+    --tjobs-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --tjobs-card-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --tjobs-card-hover-border: var(--tjobs-brand);
 
     /* Tagit – samat kuin tummassa */
-    --map-tag-color: #374151;
-    --map-tag-bg: #f3f4f6;
-    --map-tag-border: #e5e7eb;
+    --tjobs-tag-color: #374151;
+    --tjobs-tag-bg: #f3f4f6;
+    --tjobs-tag-border: #e5e7eb;
 
     /* Hae paikkaa -nappi – musta vaalealla teemalla */
-    --map-btn-bg: #1a1a1a;
-    --map-btn-text: #ffffff;
-    --map-btn-hover-bg: #333333;
+    --tjobs-btn-bg: #1a1a1a;
+    --tjobs-btn-text: #ffffff;
+    --tjobs-btn-hover-bg: #333333;
 
     /* Country count badge */
-    --map-count-color: #374151;
-    --map-count-bg: #f3f4f6;
-    --map-count-border: #e5e7eb;
+    --tjobs-count-color: #374151;
+    --tjobs-count-bg: #f3f4f6;
+    --tjobs-count-border: #e5e7eb;
 
     /* Tyhjän maan teksti */
-    --map-empty-color: #6b7280;
+    --tjobs-empty-color: #6b7280;
 
     /* CTA-banneri – tumma pohja vaalealla teemalla */
-    --map-cta-bg: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-    --map-cta-text: #ffffff;
-    --map-cta-muted: rgba(255, 255, 255, 0.75);
-    --map-cta-btn-bg: var(--map-brand);
-    --map-cta-btn-text: #000000;
-    --map-cta-btn-hover-bg: var(--map-brand-hover);
+    --tjobs-cta-bg: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --tjobs-cta-text: #ffffff;
+    --tjobs-cta-muted: rgba(255, 255, 255, 0.75);
+    --tjobs-cta-btn-bg: var(--tjobs-brand);
+    --tjobs-cta-btn-text: #000000;
+    --tjobs-cta-btn-hover-bg: var(--tjobs-brand-hover);
 }
 
 /* ── Maaryhmä-osio ── */
-.map-country-section {
+.tjobs-country-section {
     margin-bottom: 2.5rem;
 }
 
-.map-country-header {
+.tjobs-country-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--map-section-border);
+    border-bottom: 2px solid var(--tjobs-section-border);
     margin-bottom: 1rem;
 }
 
-.map-country-title {
+.tjobs-country-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 1.35rem;
     font-weight: 700;
-    color: var(--map-heading-color) !important;
+    color: var(--tjobs-heading-color) !important;
     margin: 0;
     padding: 0;
 }
 
-.map-country-flag {
+.tjobs-country-flag {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -159,84 +159,84 @@
     flex-shrink: 0;
 }
 
-.map-country-flag__img {
+.tjobs-country-flag__img {
     width: 28px;
     height: 28px;
     object-fit: contain;
     display: block;
 }
 
-.map-country-count {
+.tjobs-country-count {
     font-size: 0.85rem;
-    color: var(--map-count-color);
+    color: var(--tjobs-count-color);
     font-weight: 500;
-    background: var(--map-count-bg);
-    border: 1px solid var(--map-count-border);
+    background: var(--tjobs-count-bg);
+    border: 1px solid var(--tjobs-count-border);
     padding: 0.25rem 0.75rem;
     border-radius: 999px;
 }
 
-.map-country-empty {
-    color: var(--map-empty-color);
+.tjobs-country-empty {
+    color: var(--tjobs-empty-color);
     font-style: italic;
     padding: 1rem 0;
     margin: 0;
 }
 
 /* ── Työpaikkakortit (valkoiset molemmissa teemoissa) ── */
-.map-jobs-grid {
+.tjobs-jobs-grid {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.map-job-card {
+.tjobs-job-card {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--map-card-bg);
-    border: 1px solid var(--map-card-border);
-    border-radius: var(--map-radius);
+    background: var(--tjobs-card-bg);
+    border: 1px solid var(--tjobs-card-border);
+    border-radius: var(--tjobs-radius);
     padding: 1.25rem 1.5rem;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    box-shadow: var(--map-card-shadow);
+    box-shadow: var(--tjobs-card-shadow);
 }
 
-.map-job-card:hover {
+.tjobs-job-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--map-card-shadow-hover);
-    border-color: var(--map-card-hover-border);
+    box-shadow: var(--tjobs-card-shadow-hover);
+    border-color: var(--tjobs-card-hover-border);
 }
 
-.map-job-card__content {
+.tjobs-job-card__content {
     flex: 1;
     min-width: 0;
 }
 
-.map-job-card__title {
+.tjobs-job-card__title {
     font-size: 1.05rem;
     font-weight: 600;
-    color: var(--map-card-text);
+    color: var(--tjobs-card-text);
     margin: 0 0 0.4rem 0;
     padding: 0;
 }
 
-.map-job-card__meta {
+.tjobs-job-card__meta {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
     margin-bottom: 0.5rem;
 }
 
-.map-job-card__deadline {
+.tjobs-job-card__deadline {
     display: flex;
     align-items: center;
     gap: 0.3rem;
     font-size: 0.85rem;
-    color: var(--map-card-muted);
+    color: var(--tjobs-card-muted);
 }
 
-.map-job-card__meta-icon {
+.tjobs-job-card__meta-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -245,40 +245,40 @@
     flex-shrink: 0;
 }
 
-.map-job-card__meta-icon svg {
+.tjobs-job-card__meta-icon svg {
     width: 14px;
     height: 14px;
 }
 
-.map-job-card__tags {
+.tjobs-job-card__tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
 }
 
-.map-job-card__tag {
+.tjobs-job-card__tag {
     display: inline-block;
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--map-tag-color);
-    background: var(--map-tag-bg);
-    border: 1px solid var(--map-tag-border);
+    color: var(--tjobs-tag-color);
+    background: var(--tjobs-tag-bg);
+    border: 1px solid var(--tjobs-tag-border);
     padding: 0.2rem 0.6rem;
     border-radius: 999px;
 }
 
-.map-job-card__action {
+.tjobs-job-card__action {
     flex-shrink: 0;
     margin-left: 1.5rem;
 }
 
-.map-job-card__apply-btn {
+.tjobs-job-card__apply-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     padding: 0.6rem 1.2rem;
-    background: var(--map-btn-bg);
-    color: var(--map-btn-text) !important;
+    background: var(--tjobs-btn-bg);
+    color: var(--tjobs-btn-text) !important;
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -287,40 +287,40 @@
     white-space: nowrap;
 }
 
-.map-job-card__apply-btn:hover {
-    background: var(--map-btn-hover-bg);
+.tjobs-job-card__apply-btn:hover {
+    background: var(--tjobs-btn-hover-bg);
     transform: scale(1.03);
-    color: var(--map-btn-text) !important;
+    color: var(--tjobs-btn-text) !important;
     text-decoration: none !important;
 }
 
-.map-job-card__arrow {
+.tjobs-job-card__arrow {
     transition: transform 0.2s ease;
 }
 
-.map-job-card__apply-btn:hover .map-job-card__arrow {
+.tjobs-job-card__apply-btn:hover .tjobs-job-card__arrow {
     transform: translateX(3px);
 }
 
 /* ── CTA-banneri ── */
-.map-cta-banner {
+.tjobs-cta-banner {
     margin-top: 3rem;
-    border-radius: var(--map-radius);
-    background: var(--map-cta-bg);
+    border-radius: var(--tjobs-radius);
+    background: var(--tjobs-cta-bg);
     padding: 2.5rem 2rem;
     text-align: center;
 }
 
-.map-cta-banner__content {
+.tjobs-cta-banner__content {
     max-width: 500px;
     margin: 0 auto;
 }
 
-.map-cta-banner__icon {
+.tjobs-cta-banner__icon {
     margin-bottom: 0.75rem;
 }
 
-.map-cta-banner__icon-img {
+.tjobs-cta-banner__icon-img {
     width: 48px;
     height: 48px;
     object-fit: contain;
@@ -328,28 +328,28 @@
     margin: 0 auto;
 }
 
-.map-cta-banner__title {
+.tjobs-cta-banner__title {
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--map-cta-text);
+    color: var(--tjobs-cta-text);
     margin: 0 0 0.5rem 0;
     padding: 0;
 }
 
-.map-cta-banner__text {
+.tjobs-cta-banner__text {
     font-size: 0.95rem;
-    color: var(--map-cta-muted);
+    color: var(--tjobs-cta-muted);
     margin: 0 0 1.5rem 0;
     line-height: 1.5;
 }
 
-.map-cta-banner__button {
+.tjobs-cta-banner__button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.85rem 2rem;
-    background: var(--map-cta-btn-bg);
-    color: var(--map-cta-btn-text) !important;
+    background: var(--tjobs-cta-btn-bg);
+    color: var(--tjobs-cta-btn-text) !important;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 700;
@@ -358,53 +358,53 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.map-cta-banner__button:hover {
-    background: var(--map-cta-btn-hover-bg);
+.tjobs-cta-banner__button:hover {
+    background: var(--tjobs-cta-btn-hover-bg);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    color: var(--map-cta-btn-text) !important;
+    color: var(--tjobs-cta-btn-text) !important;
     text-decoration: none !important;
 }
 
-.map-cta-banner__arrow {
+.tjobs-cta-banner__arrow {
     transition: transform 0.2s ease;
 }
 
-.map-cta-banner__button:hover .map-cta-banner__arrow {
+.tjobs-cta-banner__button:hover .tjobs-cta-banner__arrow {
     transform: translateX(4px);
 }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
-    .map-job-card {
+    .tjobs-job-card {
         flex-direction: column;
         align-items: stretch;
     }
 
-    .map-job-card__action {
+    .tjobs-job-card__action {
         margin-left: 0;
         margin-top: 1rem;
     }
 
-    .map-job-card__apply-btn {
+    .tjobs-job-card__apply-btn {
         width: 100%;
         justify-content: center;
     }
 
-    .map-country-header {
+    .tjobs-country-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 0.3rem;
     }
 
-    .map-cta-banner {
+    .tjobs-cta-banner {
         padding: 2rem 1.25rem;
     }
 }
 
 /* ── Focus-tilat saavutettavuutta varten ── */
-.map-job-card__apply-btn:focus-visible,
-.map-cta-banner__button:focus-visible {
-    outline: 3px solid var(--map-brand);
+.tjobs-job-card__apply-btn:focus-visible,
+.tjobs-cta-banner__button:focus-visible {
+    outline: 3px solid var(--tjobs-brand);
     outline-offset: 2px;
 }

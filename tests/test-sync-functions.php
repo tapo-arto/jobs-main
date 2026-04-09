@@ -2,20 +2,20 @@
 /**
  * PHPUnit-testit sync-funktioille.
  *
- * @package My_Aggregator_Plugin
+ * @package TJobs_Plugin
  */
 
 class Test_Sync_Functions extends WP_UnitTestCase {
 
     /**
-     * Testaa map_sync_feed() tyhjällä feed URL:lla.
+     * Testaa tjobs_sync_feed() tyhjällä feed URL:lla.
      * Odotettu tulos: palauttaa tyhjät taulukot, ei lisää postauksia.
      */
     public function test_sync_feed_empty_url() {
         // Varmistetaan, että feed_url on tyhjä
-        update_option( 'my_agg_settings', array( 'feed_url' => '' ) );
+        update_option( 'tjobs_settings', array( 'feed_url' => '' ) );
 
-        $result = map_sync_feed();
+        $result = tjobs_sync_feed();
 
         $this->assertIsArray( $result );
         $this->assertArrayHasKey( 'added', $result );
@@ -26,7 +26,7 @@ class Test_Sync_Functions extends WP_UnitTestCase {
         $this->assertEmpty( $result['updated'] );
 
         // Varmistetaan, että synkka-aika on päivittynyt
-        $this->assertNotEmpty( get_option( 'my_agg_last_sync' ) );
+        $this->assertNotEmpty( get_option( 'tjobs_last_sync' ) );
     }
 
     /**
@@ -34,7 +34,7 @@ class Test_Sync_Functions extends WP_UnitTestCase {
      * Varmistaa, että kielletyt otsikot suodatetaan pois.
      */
     public function test_forbidden_titles_are_filtered() {
-        $opts = my_agg_get_settings();
+        $opts = tjobs_get_settings();
 
         // Kielletyt otsikot oletusasetuksissa
         $forbidden_raw   = $opts['forbidden_titles'];
@@ -51,9 +51,9 @@ class Test_Sync_Functions extends WP_UnitTestCase {
      */
     public function test_default_settings() {
         // Poistetaan optio, jotta saadaan oletusarvot
-        delete_option( 'my_agg_settings' );
+        delete_option( 'tjobs_settings' );
 
-        $opts = my_agg_get_settings();
+        $opts = tjobs_get_settings();
 
         $this->assertIsArray( $opts );
         $this->assertSame( '', $opts['feed_url'] );

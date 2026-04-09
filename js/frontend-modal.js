@@ -46,7 +46,7 @@
      */
     function openModal(jobId, lang) {
         currentJobId = jobId;
-        currentLang = lang || (window.mapModalConfig ? window.mapModalConfig.lang : 'fi');
+        currentLang = lang || (window.tjobsModalConfig ? window.tjobsModalConfig.lang : 'fi');
         currentTab = 'general'; // Reset to first tab
 
         // Luo modal DOM jos ei ole vielä
@@ -73,7 +73,7 @@
 
         // Odota transition ennen sisällön tyhjennystä
         setTimeout(function() {
-            const content = modalElement.querySelector('.map-modal__content');
+            const content = modalElement.querySelector('.tjobs-modal__content');
             if (content) {
                 content.innerHTML = '';
             }
@@ -85,10 +85,10 @@
      */
     function createModalDOM() {
         modalElement = document.createElement('div');
-        modalElement.className = 'map-modal-overlay';
+        modalElement.className = 'tjobs-modal-overlay';
         modalElement.innerHTML = `
-            <div class="map-modal-panel">
-                <div class="map-modal__content"></div>
+            <div class="tjobs-modal-panel">
+                <div class="tjobs-modal__content"></div>
             </div>
         `;
 
@@ -96,7 +96,7 @@
 
         // Overlay-klikkaus sulkee
         modalElement.addEventListener('click', function(e) {
-            if (e.target.classList.contains('map-modal-overlay')) {
+            if (e.target.classList.contains('tjobs-modal-overlay')) {
                 closeModal();
             }
         });
@@ -106,20 +106,20 @@
      * Lataa työpaikan data REST API:sta
      */
     function loadJobData(jobId, lang) {
-        const content = modalElement.querySelector('.map-modal__content');
+        const content = modalElement.querySelector('.tjobs-modal__content');
         if (!content) return;
 
         // Näytä loading-spinner
-        i18n = window.mapModalConfig && window.mapModalConfig.i18n ? window.mapModalConfig.i18n : {};
+        i18n = window.tjobsModalConfig && window.tjobsModalConfig.i18n ? window.tjobsModalConfig.i18n : {};
         content.innerHTML = `
-            <div class="map-modal__loading">
-                <div class="map-spinner"></div>
+            <div class="tjobs-modal__loading">
+                <div class="tjobs-spinner"></div>
                 <p>${i18n['modal.loading'] || 'Ladataan...'}</p>
             </div>
         `;
 
         // Hae data
-        const restUrl = window.mapModalConfig ? window.mapModalConfig.restUrl : '/wp-json/map/v1';
+        const restUrl = window.tjobsModalConfig ? window.tjobsModalConfig.restUrl : '/wp-json/tjobs/v1';
         const url = `${restUrl}/job-info/${jobId}?lang=${lang}`;
 
         fetch(url)
@@ -136,15 +136,15 @@
             .catch(error => {
                 console.error('Error loading job info:', error);
                 content.innerHTML = `
-                    <div class="map-modal__error">
+                    <div class="tjobs-modal__error">
                         <p>${i18n['modal.load_error'] || 'Tietojen lataaminen epäonnistui.'}</p>
-                        <button type="button" class="map-modal__retry">
+                        <button type="button" class="tjobs-modal__retry">
                             ${i18n['modal.close'] || 'Sulje'}
                         </button>
                     </div>
                 `;
                 
-                const retryBtn = content.querySelector('.map-modal__retry');
+                const retryBtn = content.querySelector('.tjobs-modal__retry');
                 if (retryBtn) {
                     retryBtn.addEventListener('click', closeModal);
                 }
@@ -155,7 +155,7 @@
      * Renderöi työpaikan tiedot tab-pohjaisena
      */
     function renderJobInfo(data) {
-        const content = modalElement.querySelector('.map-modal__content');
+        const content = modalElement.querySelector('.tjobs-modal__content');
         if (!content) return;
 
         const pkg = data.infopackage;
@@ -166,8 +166,8 @@
         let html = '';
 
         // Top bar: sulkemisnappi ja kielivalitsin
-        html += '<div class="map-modal__topbar">';
-        html += '<button type="button" class="map-modal__close" aria-label="Close">&times;</button>';
+        html += '<div class="tjobs-modal__topbar">';
+        html += '<button type="button" class="tjobs-modal__close" aria-label="Close">&times;</button>';
         
         // Kielivalitsin
         if (pkg && pkg.available_languages) {
@@ -176,10 +176,10 @@
             );
             
             if (availableLangs.length > 1) {
-                html += '<div class="map-modal__lang-switcher">';
+                html += '<div class="tjobs-modal__lang-switcher">';
                 availableLangs.forEach(lang => {
                     const isActive = lang === data.lang;
-                    html += `<button type="button" class="map-lang-btn ${isActive ? 'is-active' : ''}" data-lang="${lang}">${lang.toUpperCase()}</button>`;
+                    html += `<button type="button" class="tjobs-lang-btn ${isActive ? 'is-active' : ''}" data-lang="${lang}">${lang.toUpperCase()}</button>`;
                 });
                 html += '</div>';
             }
@@ -188,55 +188,55 @@
         html += '</div>';
 
         // Otsikko
-        html += `<h2 class="map-modal__title">${escapeHtml(data.title)}</h2>`;
+        html += `<h2 class="tjobs-modal__title">${escapeHtml(data.title)}</h2>`;
 
         // Excerpt
         if (data.excerpt) {
-            html += `<div class="map-modal__excerpt">${escapeHtml(data.excerpt)}</div>`;
+            html += `<div class="tjobs-modal__excerpt">${escapeHtml(data.excerpt)}</div>`;
         }
 
         // Tabit (jos tarvitaan)
         if (showTabs) {
-            html += '<div class="map-modal__tabs">';
-            html += `<button type="button" class="map-tab-btn is-active" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
+            html += '<div class="tjobs-modal__tabs">';
+            html += `<button type="button" class="tjobs-tab-btn is-active" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
             if (hasMedia) {
-                html += `<button type="button" class="map-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Videot'}</button>`;
+                html += `<button type="button" class="tjobs-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Videot'}</button>`;
             }
             if (hasQuestions) {
-                html += `<button type="button" class="map-tab-btn" data-tab="questions">${i18n['tab.questions'] || 'Kysymykset'}</button>`;
+                html += `<button type="button" class="tjobs-tab-btn" data-tab="questions">${i18n['tab.questions'] || 'Kysymykset'}</button>`;
             }
             html += '</div>';
         }
 
         // Tab-sisältö: Yleistä
-        html += `<div class="map-tab-content" data-tab-content="general">`;
+        html += `<div class="tjobs-tab-content" data-tab-content="general">`;
         
         // Työn kuvaus (laura:description)
         // Note: Server sanitizes with wp_kses_post (WordPress standard for post content)
         // This is the same sanitization used for all WordPress post content and is safe to render as HTML
         if (data.description) {
-            html += '<div class="map-modal__job-description">' + data.description + '</div>';
+            html += '<div class="tjobs-modal__job-description">' + data.description + '</div>';
         }
         
         if (pkg) {
             // Highlights
             if (pkg.highlights && pkg.highlights.length > 0) {
-                html += '<div class="map-modal__highlights">';
+                html += '<div class="tjobs-modal__highlights">';
                 pkg.highlights.forEach(highlight => {
-                    html += `<span class="map-highlight-pill">${escapeHtml(highlight)}</span>`;
+                    html += `<span class="tjobs-highlight-pill">${escapeHtml(highlight)}</span>`;
                 });
                 html += '</div>';
             }
 
             // Intro
             if (pkg.intro) {
-                html += `<div class="map-modal__intro">${escapeHtml(pkg.intro)}</div>`;
+                html += `<div class="tjobs-modal__intro">${escapeHtml(pkg.intro)}</div>`;
             }
 
             // Yhteyshenkilö
             if (pkg.contact && (pkg.contact.name || pkg.contact.email || pkg.contact.phone)) {
-                html += `<h3 class="map-modal__section-heading">${i18n['modal.contact_heading'] || 'Yhteyshenkilö'}</h3>`;
-                html += '<div class="map-modal__contact">';
+                html += `<h3 class="tjobs-modal__section-heading">${i18n['modal.contact_heading'] || 'Yhteyshenkilö'}</h3>`;
+                html += '<div class="tjobs-modal__contact">';
                 if (pkg.contact.name) {
                     html += `<p><strong>👤 ${escapeHtml(pkg.contact.name)}</strong></p>`;
                 }
@@ -253,13 +253,13 @@
 
         // Tab-sisältö: Media
         if (hasMedia) {
-            html += `<div class="map-tab-content" data-tab-content="media" style="display:none;">`;
+            html += `<div class="tjobs-tab-content" data-tab-content="media" style="display:none;">`;
             
             // Video
             if (pkg.video_url && pkg.video_url.trim()) {
                 const embedUrl = parseVideoUrl(pkg.video_url);
                 if (embedUrl) {
-                    html += '<div class="map-modal__video-wrapper">';
+                    html += '<div class="tjobs-modal__video-wrapper">';
                     html += `<iframe src="${escapeHtml(embedUrl)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
                     html += '</div>';
                 }
@@ -267,9 +267,9 @@
 
             // Galleria
             if (pkg.gallery && pkg.gallery.length > 0) {
-                html += '<div class="map-modal__gallery">';
+                html += '<div class="tjobs-modal__gallery">';
                 pkg.gallery.forEach((image, index) => {
-                    html += `<div class="map-gallery-item" data-index="${index}">`;
+                    html += `<div class="tjobs-gallery-item" data-index="${index}">`;
                     html += `<img src="${escapeHtml(image.thumb)}" alt="" loading="lazy" />`;
                     html += '</div>';
                 });
@@ -281,8 +281,8 @@
 
         // Tab-sisältö: Kysymykset
         if (hasQuestions) {
-            html += `<div class="map-tab-content" data-tab-content="questions" style="display:none;">`;
-            html += '<div class="map-modal__questions">';
+            html += `<div class="tjobs-tab-content" data-tab-content="questions" style="display:none;">`;
+            html += '<div class="tjobs-modal__questions">';
             pkg.questions.forEach((q, index) => {
                 html += renderQuestion(q, index);
             });
@@ -292,8 +292,8 @@
 
         // CTA-nappi (sticky)
         if (data.apply_url) {
-            html += `<div class="map-modal__cta">
-                <a href="${escapeHtml(data.apply_url)}" target="_blank" rel="noopener" class="map-cta-button">
+            html += `<div class="tjobs-modal__cta">
+                <a href="${escapeHtml(data.apply_url)}" target="_blank" rel="noopener" class="tjobs-cta-button">
                     ${i18n['modal.cta_apply'] || 'Siirry hakemaan →'}
                 </a>
             </div>`;
@@ -309,16 +309,16 @@
      * Kiinnitä event listenerit modaliin
      */
     function attachEventListeners(data) {
-        const content = modalElement.querySelector('.map-modal__content');
+        const content = modalElement.querySelector('.tjobs-modal__content');
 
         // Sulkemisnappi
-        const closeBtn = content.querySelector('.map-modal__close');
+        const closeBtn = content.querySelector('.tjobs-modal__close');
         if (closeBtn) {
             closeBtn.addEventListener('click', closeModal);
         }
 
         // Kielivalitsimet
-        const langButtons = content.querySelectorAll('.map-lang-btn');
+        const langButtons = content.querySelectorAll('.tjobs-lang-btn');
         langButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 const newLang = this.getAttribute('data-lang');
@@ -329,7 +329,7 @@
         });
 
         // Tab-napit
-        const tabButtons = content.querySelectorAll('.map-tab-btn');
+        const tabButtons = content.querySelectorAll('.tjobs-tab-btn');
         tabButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 const targetTab = this.getAttribute('data-tab');
@@ -338,7 +338,7 @@
         });
 
         // Galleria-kuvien klikkaukset (lightbox)
-        const galleryItems = content.querySelectorAll('.map-gallery-item');
+        const galleryItems = content.querySelectorAll('.tjobs-gallery-item');
         if (data.infopackage && data.infopackage.gallery) {
             galleryItems.forEach(item => {
                 item.addEventListener('click', function() {
@@ -349,35 +349,35 @@
         }
 
         // Yes/No pill buttons
-        const pillButtons = content.querySelectorAll('.map-pill-button');
+        const pillButtons = content.querySelectorAll('.tjobs-pill-button');
         pillButtons.forEach(btn => {
             btn.addEventListener('click', function() {
-                const siblings = this.parentElement.querySelectorAll('.map-pill-button');
+                const siblings = this.parentElement.querySelectorAll('.tjobs-pill-button');
                 siblings.forEach(s => s.classList.remove('is-selected'));
                 this.classList.add('is-selected');
                 
                 // Tarkista palaute
-                const questionDiv = this.closest('.map-question');
+                const questionDiv = this.closest('.tjobs-question');
                 checkUnsuitableFeedback(questionDiv, this.getAttribute('data-value'));
                 checkOverallResult(content);
             });
         });
 
         // Scale radio buttons
-        const scaleInputs = content.querySelectorAll('.map-question__scale input[type="radio"]');
+        const scaleInputs = content.querySelectorAll('.tjobs-question__scale input[type="radio"]');
         scaleInputs.forEach(input => {
             input.addEventListener('change', function() {
-                const questionDiv = this.closest('.map-question');
+                const questionDiv = this.closest('.tjobs-question');
                 checkUnsuitableFeedback(questionDiv, this.value);
                 checkOverallResult(content);
             });
         });
 
         // Select dropdown
-        const selectInputs = content.querySelectorAll('.map-question__select');
+        const selectInputs = content.querySelectorAll('.tjobs-question__select');
         selectInputs.forEach(select => {
             select.addEventListener('change', function() {
-                const questionDiv = this.closest('.map-question');
+                const questionDiv = this.closest('.tjobs-question');
                 checkUnsuitableFeedback(questionDiv, this.value);
                 checkOverallResult(content);
             });
@@ -390,10 +390,10 @@
     function switchTab(tabName) {
         currentTab = tabName;
         
-        const content = modalElement.querySelector('.map-modal__content');
+        const content = modalElement.querySelector('.tjobs-modal__content');
         
         // Päivitä tab-napit
-        const tabButtons = content.querySelectorAll('.map-tab-btn');
+        const tabButtons = content.querySelectorAll('.tjobs-tab-btn');
         tabButtons.forEach(btn => {
             if (btn.getAttribute('data-tab') === tabName) {
                 btn.classList.add('is-active');
@@ -403,7 +403,7 @@
         });
 
         // Päivitä tab-sisällöt
-        const tabContents = content.querySelectorAll('.map-tab-content');
+        const tabContents = content.querySelectorAll('.tjobs-tab-content');
         tabContents.forEach(tc => {
             if (tc.getAttribute('data-tab-content') === tabName) {
                 tc.style.display = 'block';
@@ -421,8 +421,8 @@
             createLightboxDOM();
         }
 
-        const image = lightboxElement.querySelector('.map-lightbox__image');
-        const counter = lightboxElement.querySelector('.map-lightbox__counter');
+        const image = lightboxElement.querySelector('.tjobs-lightbox__image');
+        const counter = lightboxElement.querySelector('.tjobs-lightbox__counter');
         
         let currentIndex = startIndex;
 
@@ -433,8 +433,8 @@
         }
 
         // Navigointi
-        const prevBtn = lightboxElement.querySelector('.map-lightbox__prev');
-        const nextBtn = lightboxElement.querySelector('.map-lightbox__next');
+        const prevBtn = lightboxElement.querySelector('.tjobs-lightbox__prev');
+        const nextBtn = lightboxElement.querySelector('.tjobs-lightbox__next');
 
         prevBtn.onclick = function() {
             const newIndex = (currentIndex - 1 + gallery.length) % gallery.length;
@@ -465,26 +465,26 @@
      */
     function createLightboxDOM() {
         lightboxElement = document.createElement('div');
-        lightboxElement.className = 'map-lightbox-overlay';
+        lightboxElement.className = 'tjobs-lightbox-overlay';
         lightboxElement.innerHTML = `
-            <button type="button" class="map-lightbox__close" aria-label="Close">&times;</button>
-            <button type="button" class="map-lightbox__prev" aria-label="Previous">‹</button>
-            <button type="button" class="map-lightbox__next" aria-label="Next">›</button>
-            <div class="map-lightbox__content">
-                <img class="map-lightbox__image" src="" alt="" />
-                <div class="map-lightbox__counter">1 / 1</div>
+            <button type="button" class="tjobs-lightbox__close" aria-label="Close">&times;</button>
+            <button type="button" class="tjobs-lightbox__prev" aria-label="Previous">‹</button>
+            <button type="button" class="tjobs-lightbox__next" aria-label="Next">›</button>
+            <div class="tjobs-lightbox__content">
+                <img class="tjobs-lightbox__image" src="" alt="" />
+                <div class="tjobs-lightbox__counter">1 / 1</div>
             </div>
         `;
 
         document.body.appendChild(lightboxElement);
 
         // Sulkemisnappi
-        const closeBtn = lightboxElement.querySelector('.map-lightbox__close');
+        const closeBtn = lightboxElement.querySelector('.tjobs-lightbox__close');
         closeBtn.addEventListener('click', closeLightbox);
 
         // Overlay-klikkaus sulkee
         lightboxElement.addEventListener('click', function(e) {
-            if (e.target.classList.contains('map-lightbox-overlay')) {
+            if (e.target.classList.contains('tjobs-lightbox-overlay')) {
                 closeLightbox();
             }
         });
@@ -523,31 +523,31 @@
      * Renderöi yksittäinen kysymys
      */
     function renderQuestion(question, index) {
-        let html = '<div class="map-question">';
+        let html = '<div class="tjobs-question">';
         
         // Kysymysteksti
-        html += `<label class="map-question__label">
+        html += `<label class="tjobs-question__label">
             ${escapeHtml(question.question)}
-            ${question.required ? `<span class="map-required">*</span>` : ''}
+            ${question.required ? `<span class="tjobs-required">*</span>` : ''}
         </label>`;
 
         // Tyyppikohtainen renderöinti
         switch (question.type) {
             case 'text':
-                html += `<textarea class="map-question__textarea" placeholder="${i18n['question.text_placeholder'] || 'Kirjoita vastauksesi tähän'}" ${question.required ? 'required' : ''}></textarea>`;
+                html += `<textarea class="tjobs-question__textarea" placeholder="${i18n['question.text_placeholder'] || 'Kirjoita vastauksesi tähän'}" ${question.required ? 'required' : ''}></textarea>`;
                 break;
 
             case 'yesno':
-                html += '<div class="map-question__pills">';
-                html += `<button type="button" class="map-pill-button" data-value="yes">${i18n['question.yes'] || 'Kyllä'}</button>`;
-                html += `<button type="button" class="map-pill-button" data-value="no">${i18n['question.no'] || 'Ei'}</button>`;
+                html += '<div class="tjobs-question__pills">';
+                html += `<button type="button" class="tjobs-pill-button" data-value="yes">${i18n['question.yes'] || 'Kyllä'}</button>`;
+                html += `<button type="button" class="tjobs-pill-button" data-value="no">${i18n['question.no'] || 'Ei'}</button>`;
                 html += '</div>';
                 break;
 
             case 'scale':
-                html += '<div class="map-question__scale">';
+                html += '<div class="tjobs-question__scale">';
                 for (let i = 1; i <= 5; i++) {
-                    html += `<label class="map-scale-option">
+                    html += `<label class="tjobs-scale-option">
                         <input type="radio" name="question_${index}" value="${i}" ${question.required ? 'required' : ''}>
                         <span>${i}</span>
                     </label>`;
@@ -556,7 +556,7 @@
                 break;
 
             case 'select':
-                html += `<select class="map-question__select" ${question.required ? 'required' : ''}>`;
+                html += `<select class="tjobs-question__select" ${question.required ? 'required' : ''}>`;
                 html += `<option value="">${i18n['question.select_placeholder'] || 'Valitse...'}</option>`;
                 if (question.options) {
                     const options = question.options.split('\n');
@@ -575,7 +575,7 @@
                 break;
 
             default:
-                html += `<input type="text" class="map-question__input" ${question.required ? 'required' : ''}>`;
+                html += `<input type="text" class="tjobs-question__input" ${question.required ? 'required' : ''}>`;
         }
 
         // Palaute-banneri placeholder (piilotettu oletuksena)
@@ -584,10 +584,10 @@
         const unsuitableFeedback = question.unsuitable_feedback || '';
         
         if (unsuitableValue && unsuitableFeedback) {
-            html += `<div class="map-question__feedback" style="display:none;" data-unsuitable-values="${escapeHtml(unsuitableValue)}">
-                <div class="map-feedback-banner">
-                    <span class="map-feedback-icon">💡</span>
-                    <div class="map-feedback-text">
+            html += `<div class="tjobs-question__feedback" style="display:none;" data-unsuitable-values="${escapeHtml(unsuitableValue)}">
+                <div class="tjobs-feedback-banner">
+                    <span class="tjobs-feedback-icon">💡</span>
+                    <div class="tjobs-feedback-text">
                         <strong>${i18n['feedback.heading'] || 'Huomio'}</strong>
                         <p>${escapeHtml(unsuitableFeedback)}</p>
                     </div>
@@ -595,10 +595,10 @@
             </div>`;
         } else if (unsuitableValue) {
             // Käytä oletuspalautetta
-            html += `<div class="map-question__feedback" style="display:none;" data-unsuitable-values="${escapeHtml(unsuitableValue)}">
-                <div class="map-feedback-banner">
-                    <span class="map-feedback-icon">💡</span>
-                    <div class="map-feedback-text">
+            html += `<div class="tjobs-question__feedback" style="display:none;" data-unsuitable-values="${escapeHtml(unsuitableValue)}">
+                <div class="tjobs-feedback-banner">
+                    <span class="tjobs-feedback-icon">💡</span>
+                    <div class="tjobs-feedback-text">
                         <strong>${i18n['feedback.heading'] || 'Huomio'}</strong>
                         <p>${i18n['feedback.unsuitable_default'] || 'Tämä tehtävä ei välttämättä vastaa kaikkia toiveitasi, mutta voit silti jatkaa hakemista!'}</p>
                     </div>
@@ -620,10 +620,10 @@
     function checkOverallResult(contentEl) {
         if (!contentEl) return;
 
-        var questionsContainer = contentEl.querySelector('.map-modal__questions');
+        var questionsContainer = contentEl.querySelector('.tjobs-modal__questions');
         if (!questionsContainer) return;
 
-        var questionDivs = questionsContainer.querySelectorAll('.map-question');
+        var questionDivs = questionsContainer.querySelectorAll('.tjobs-question');
         if (questionDivs.length === 0) return;
 
         var totalAnswerable = 0;
@@ -632,7 +632,7 @@
 
         questionDivs.forEach(function(qDiv) {
             // Skip info-type questions (no interactive inputs)
-            var hasAnyInput = qDiv.querySelector('textarea, input[type="radio"], input[type="text"], select, .map-pill-button');
+            var hasAnyInput = qDiv.querySelector('textarea, input[type="radio"], input[type="text"], select, .tjobs-pill-button');
             if (!hasAnyInput) return;
 
             totalAnswerable++;
@@ -640,7 +640,7 @@
             var selectedValue = null;
 
             // Yes/No pill
-            var selectedPill = qDiv.querySelector('.map-pill-button.is-selected');
+            var selectedPill = qDiv.querySelector('.tjobs-pill-button.is-selected');
             if (selectedPill) {
                 selectedValue = selectedPill.getAttribute('data-value');
             }
@@ -652,13 +652,13 @@
             }
 
             // Select
-            var selectEl = qDiv.querySelector('.map-question__select');
+            var selectEl = qDiv.querySelector('.tjobs-question__select');
             if (selectEl && selectEl.value) {
                 selectedValue = selectEl.value;
             }
 
             // Textarea
-            var textareaEl = qDiv.querySelector('.map-question__textarea');
+            var textareaEl = qDiv.querySelector('.tjobs-question__textarea');
             if (textareaEl && textareaEl.value.trim()) {
                 selectedValue = textareaEl.value.trim();
             }
@@ -667,7 +667,7 @@
             totalAnswered++;
 
             // Check if this answer is suitable (didn't hit unsuitable value)
-            var feedbackDiv = qDiv.querySelector('.map-question__feedback');
+            var feedbackDiv = qDiv.querySelector('.tjobs-question__feedback');
             if (feedbackDiv) {
                 var unsuitableValuesAttr = feedbackDiv.getAttribute('data-unsuitable-values');
                 if (unsuitableValuesAttr) {
@@ -688,7 +688,7 @@
         if (totalAnswerable === 0) return;
 
         // Remove existing result banner
-        var existingBanner = questionsContainer.querySelector('.map-result-banner');
+        var existingBanner = questionsContainer.querySelector('.tjobs-result-banner');
         if (existingBanner) {
             existingBanner.remove();
         }
@@ -702,20 +702,20 @@
 
         var banner = document.createElement('div');
         if (isGood) {
-            banner.className = 'map-result-banner map-result-banner--good';
+            banner.className = 'tjobs-result-banner tjobs-result-banner--good';
             banner.innerHTML =
-                '<span class="map-result-banner__icon">✅</span>' +
-                '<div class="map-result-banner__body">' +
-                    '<p class="map-result-banner__heading">' + escapeHtml(i18n['result.good_heading'] || 'Hienoa!') + '</p>' +
-                    '<p class="map-result-banner__text">' + escapeHtml(i18n['result.good_text'] || 'Vaikutat sopivalta tähän tehtävään.') + '</p>' +
+                '<span class="tjobs-result-banner__icon">✅</span>' +
+                '<div class="tjobs-result-banner__body">' +
+                    '<p class="tjobs-result-banner__heading">' + escapeHtml(i18n['result.good_heading'] || 'Hienoa!') + '</p>' +
+                    '<p class="tjobs-result-banner__text">' + escapeHtml(i18n['result.good_text'] || 'Vaikutat sopivalta tähän tehtävään.') + '</p>' +
                 '</div>';
         } else {
-            banner.className = 'map-result-banner map-result-banner--guidance';
+            banner.className = 'tjobs-result-banner tjobs-result-banner--guidance';
             banner.innerHTML =
-                '<span class="map-result-banner__icon">&#x1F4A1;</span>' +
-                '<div class="map-result-banner__body">' +
-                    '<p class="map-result-banner__heading">' + escapeHtml(i18n['result.guidance_heading'] || 'Huomioi tehtävän vaatimukset') + '</p>' +
-                    '<p class="map-result-banner__text">' + escapeHtml(i18n['result.guidance_text'] || 'Suosittelemme tutustumaan tarkemmin tehtävän vaatimuksiin. Voit kuitenkin jatkaa hakemista!') + '</p>' +
+                '<span class="tjobs-result-banner__icon">&#x1F4A1;</span>' +
+                '<div class="tjobs-result-banner__body">' +
+                    '<p class="tjobs-result-banner__heading">' + escapeHtml(i18n['result.guidance_heading'] || 'Huomioi tehtävän vaatimukset') + '</p>' +
+                    '<p class="tjobs-result-banner__text">' + escapeHtml(i18n['result.guidance_text'] || 'Suosittelemme tutustumaan tarkemmin tehtävän vaatimuksiin. Voit kuitenkin jatkaa hakemista!') + '</p>' +
                 '</div>';
         }
 
@@ -727,7 +727,7 @@
      */
     function checkUnsuitableFeedback(questionDiv, selectedValue) {
         if (!questionDiv) return;
-        const feedbackDiv = questionDiv.querySelector('.map-question__feedback');
+        const feedbackDiv = questionDiv.querySelector('.tjobs-question__feedback');
         if (!feedbackDiv) return;
         
         const unsuitableValuesAttr = feedbackDiv.getAttribute('data-unsuitable-values');
