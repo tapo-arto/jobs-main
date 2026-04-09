@@ -7,8 +7,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 function tjobs_register_cpt_jobs() {
     register_post_type( 'tjobs_tyopaikat', array(
         'labels' => array(
-            'name'          => __('Avoimet työpaikat', 'tapojarvijobs'),
-            'singular_name' => __('Avoin työpaikka', 'tapojarvijobs'),
+            'name'          => __('TJobs: Avoimet työpaikat', 'tapojarvijobs'),
+            'singular_name' => __('TJobs: Avoin työpaikka', 'tapojarvijobs'),
+            'menu_name'     => __('TJobs Työpaikat', 'tapojarvijobs'),
         ),
         'public'       => true,
         'has_archive'  => true,
