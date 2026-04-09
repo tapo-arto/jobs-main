@@ -174,7 +174,7 @@ function map_rest_get_job_info( WP_REST_Request $request ) {
         'id'          => $post_id,
         'title'       => $post->post_title,
         'excerpt'     => get_the_excerpt( $post ),
-        'description' => wp_strip_all_tags( $post->post_content ),
+        'description' => wp_kses_post( $post->post_content ),
         'apply_url'   => esc_url_raw( $apply_url ),
         'country'     => get_post_meta( $post_id, 'job_country', true ),
         'city'        => get_post_meta( $post_id, 'job_city', true ),

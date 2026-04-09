@@ -174,9 +174,9 @@ function map_jobs_list_shortcode($atts) {
     }
 
     // Validoi värit ennen inline-CSS:ää
-    $link_color       = preg_match('/^#[0-9a-fA-F]{3,6}$/', $opts['link_color'])       ? $opts['link_color']       : '#000000';
-    $link_hover_color = preg_match('/^#[0-9a-fA-F]{3,6}$/', $opts['link_hover_color']) ? $opts['link_hover_color'] : '#ff0000';
-    $desc_text_color  = preg_match('/^#[0-9a-fA-F]{3,6}$/', $opts['description_text_color']) ? $opts['description_text_color'] : '#666666';
+    $link_color       = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['link_color'])       ? $opts['link_color']       : '#000000';
+    $link_hover_color = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['link_hover_color']) ? $opts['link_hover_color'] : '#ff0000';
+    $desc_text_color  = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['description_text_color']) ? $opts['description_text_color'] : '#666666';
 
     // Dynaaminen inline-CSS väripäivityksiä varten
     $inline_css = '
