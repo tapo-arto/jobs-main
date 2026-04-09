@@ -5,14 +5,26 @@ if (!defined('ABSPATH')) {
 
 // Lisää asetussivu
 function tjobs_add_admin_menu() {
+    // Top-level menu
     add_menu_page(
-        'Jobs V2 Asetukset',
+        'Jobs V2',
         'Jobs V2',
         'manage_options',
         'tjobs-v2-settings',
         'tjobs_render_settings_page',
         'dashicons-businessman',
         80
+    );
+
+    // Explicitly add the settings page as a submenu so it appears in the list
+    // and doesn't get overridden by the 'tjobs_infopackage' CPT.
+    add_submenu_page(
+        'tjobs-v2-settings',
+        'Jobs V2 Asetukset',
+        'Asetukset',
+        'manage_options',
+        'tjobs-v2-settings',
+        'tjobs_render_settings_page'
     );
 }
 add_action('admin_menu', 'tjobs_add_admin_menu');
