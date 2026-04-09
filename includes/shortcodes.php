@@ -7,6 +7,52 @@ if (!defined('ABSPATH')) {
 add_shortcode('my_jobs_list', 'map_jobs_list_shortcode');
 add_shortcode('my_jobs_by_country', 'map_jobs_by_country_shortcode');
 
+/**
+ * Lataa modal-assettit (CSS + JS) fronttiin.
+ * Kutsutaan shortcodeista tarpeen mukaan.
+ */
+function map_enqueue_modal_assets() {
+    $css_path = plugin_dir_path( dirname( __FILE__ ) ) . 'css/modal-infopackage.css';
+    if ( file_exists( $css_path ) ) {
+        wp_enqueue_style(
+            'map-modal-infopackage-css',
+            plugins_url( 'css/modal-infopackage.css', dirname( __FILE__ ) ),
+            array(),
+            filemtime( $css_path )
+        );
+    }
+
+    $js_path = plugin_dir_path( dirname( __FILE__ ) ) . 'js/frontend-modal.js';
+    if ( file_exists( $js_path ) ) {
+        wp_enqueue_script(
+            'map-frontend-modal-js',
+            plugins_url( 'js/frontend-modal.js', dirname( __FILE__ ) ),
+            array(),
+            filemtime( $js_path ),
+            true
+        );
+
+        $lang = 'fi';
+        if ( function_exists( 'map_get_current_lang' ) ) {
+            $lang = map_get_current_lang();
+        } elseif ( function_exists( 'pll_current_language' ) ) {
+            $lang = pll_current_language() ?: 'fi';
+        }
+
+        $i18n = function_exists( 'map_get_js_translations' ) ? map_get_js_translations( $lang ) : array();
+
+        wp_localize_script(
+            'map-frontend-modal-js',
+            'mapModalConfig',
+            array(
+                'restUrl' => esc_url_raw( rest_url( 'map/v1/job-info/' ) ),
+                'lang'    => $lang,
+                'i18n'    => $i18n,
+            )
+        );
+    }
+}
+
 
 /**
  * Palauttaa nykyiselle kielelle sopivan avoimen hakemuksen URL:n.
@@ -55,6 +101,9 @@ function map_get_open_application_url_for_language($lang_code = '') {
  * @return string Työpaikkalistaus HTML-muodossa
  */
 function map_jobs_list_shortcode($atts) {
+    // Lataa modal-assettit
+    map_enqueue_modal_assets();
+
     // Hae asetukset
     $opts = my_agg_get_settings();
 
@@ -124,47 +173,79 @@ function map_jobs_list_shortcode($atts) {
         return '<p>' . esc_html($no_jobs_text) . '</p>';
     }
 
-    // Dynaaminen inline-CSS, jotta värit päivittyvät asetuksista
-    $output = '<style>
-        .my-job-list { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
+    // Validoi värit ennen inline-CSS:ää
+    $link_color       = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['link_color'])       ? $opts['link_color']       : '#000000';
+    $link_hover_color = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['link_hover_color']) ? $opts['link_hover_color'] : '#ff0000';
+    $desc_text_color  = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['description_text_color']) ? $opts['description_text_color'] : '#666666';
+
+    // Dynaaminen inline-CSS väripäivityksiä varten
+    $inline_css = '
+        .my-job-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
-        .my-job-list li { 
-            margin-bottom: 20px; 
-            padding-bottom: 10px; 
-            border-bottom: 1px solid rgba(0, 0, 0, 0.25); 
+        .my-job-list li {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.25);
         }
-        .my-job-list a { 
-            color: ' . esc_attr($opts['link_color']) . '; 
-            text-decoration: none; 
-            font-weight: bold; 
-            font-size: 18px; 
+        .my-job-list a {
+            color: ' . esc_attr( $link_color ) . ';
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 18px;
         }
-        .my-job-list a:hover { 
-            color: ' . esc_attr($opts['link_hover_color']) . '; 
-            text-decoration: none; 
+        .my-job-list a:hover {
+            color: ' . esc_attr( $link_hover_color ) . ';
+            text-decoration: none;
         }
-        .my-job-list .description { 
-            color: ' . esc_attr($opts['description_text_color']) . '; 
-            font-size: 0.8rem; 
-            font-weight: 300; 
-            margin-top: 5px; 
-        }
-    </style>';
+        .my-job-list .description {
+            color: ' . esc_attr( $desc_text_color ) . ';
+            font-size: 0.8rem;
+            font-weight: 300;
+            margin-top: 5px;
+        }';
+
+    // Lisätään inline-tyylit asianmukaisesti
+    if ( wp_style_is( 'my-aggregator-css', 'enqueued' ) ) {
+        wp_add_inline_style( 'my-aggregator-css', $inline_css );
+    } elseif ( wp_style_is( 'map-modal-infopackage-css', 'enqueued' ) ) {
+        wp_add_inline_style( 'map-modal-infopackage-css', $inline_css );
+    } else {
+        $output = '<style>' . $inline_css . '</style>';
+    }
+
+    if ( ! isset( $output ) ) {
+        $output = '';
+    }
+
+    // Info-badge käännös
+    $info_badge_text = function_exists( 'map_i18n' ) ? map_i18n( 'modal.info_badge', $lang_code ) : 'ℹ️ Lisätietoja';
 
     $output .= '<ul class="my-job-list">';
     while ($query->have_posts()) {
         $query->the_post();
 
+        $post_id = get_the_ID();
         $title   = get_the_title();
-        $link    = get_post_meta(get_the_ID(), 'original_rss_link', true);
+        $link    = get_post_meta( $post_id, 'original_rss_link', true );
         $excerpt = get_the_excerpt();
+
+        // Tarkista onko infopaketti saatavilla
+        $has_infopackage = function_exists( 'map_resolve_infopackage' )
+            ? map_resolve_infopackage( $post_id, $lang_code )
+            : null;
 
         $output .= '<li>';
         if ($link) {
-            $output .= '<a href="' . esc_url($link) . '" target="_blank" rel="noopener">' . esc_html($title) . '</a>';
+            if ( $has_infopackage ) {
+                // Linkki avaa modalin (data-job-id), varsinainen URL siirtyy CTA-napista
+                $output .= '<a href="' . esc_url( $link ) . '" data-job-id="' . esc_attr( $post_id ) . '" target="_blank" rel="noopener">' . esc_html( $title ) . '</a>';
+                $output .= '<span class="map-info-badge">' . esc_html( $info_badge_text ) . '</span>';
+            } else {
+                $output .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener">' . esc_html( $title ) . '</a>';
+            }
         } else {
             // Jos linkkiä ei ole, näytetään pelkkä otsikko
             $output .= esc_html($title);
@@ -190,6 +271,9 @@ function map_jobs_list_shortcode($atts) {
  * @return string Maakohtainen työpaikkalistaus HTML-muodossa
  */
 function map_jobs_by_country_shortcode($atts) {
+    // Lataa modal-assettit
+    map_enqueue_modal_assets();
+
     // Hae asetukset
     $opts = my_agg_get_settings();
 
@@ -307,6 +391,9 @@ function map_jobs_by_country_shortcode($atts) {
         $output .= '</div>';
 
         $output .= '<div class="map-jobs-grid">';
+            // Info-badge käännös
+            $info_badge_text = function_exists( 'map_i18n' ) ? map_i18n( 'modal.info_badge', $lang_code ) : 'ℹ️ Lisätietoja';
+
             while ($query->have_posts()) {
                 $query->the_post();
                 $post_id  = get_the_ID();
@@ -319,9 +406,23 @@ function map_jobs_by_country_shortcode($atts) {
                 // Käytä form_url:ia ensisijaisesti, fallback original_rss_link
                 $apply_url = !empty($form_url) ? $form_url : get_post_meta($post_id, 'original_rss_link', true);
 
+                // Tarkista onko infopaketti saatavilla
+                $has_infopackage = function_exists( 'map_resolve_infopackage' )
+                    ? map_resolve_infopackage( $post_id, $lang_code )
+                    : null;
+
                 $output .= '<article class="map-job-card">';
                 $output .= '<div class="map-job-card__content">';
-                $output .= '<h3 class="map-job-card__title">' . esc_html($title) . '</h3>';
+
+                // Otsikko: infopaketin kanssa avaa modalin, ilman menee suoraan hakemaan
+                if ( $has_infopackage && !empty( $apply_url ) ) {
+                    $output .= '<h3 class="map-job-card__title">';
+                    $output .= '<a href="' . esc_url( $apply_url ) . '" data-job-id="' . esc_attr( $post_id ) . '" style="text-decoration:none;color:inherit;">' . esc_html( $title ) . '</a>';
+                    $output .= ' <span class="map-info-badge">' . esc_html( $info_badge_text ) . '</span>';
+                    $output .= '</h3>';
+                } else {
+                    $output .= '<h3 class="map-job-card__title">' . esc_html($title) . '</h3>';
+                }
 
                 if (!empty($excerpt)) {
                     $output .= '<div class="map-job-card__meta">';

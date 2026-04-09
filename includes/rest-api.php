@@ -35,6 +35,24 @@ function map_register_rest_routes() {
             ),
         ),
     ) );
+
+    // Uusi endpoint infopaketeille
+    register_rest_route( 'map/v1', '/job-info/(?P<id>\d+)', array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => 'map_rest_get_job_info',
+        'permission_callback' => '__return_true',
+        'args'                => array(
+            'id'   => array(
+                'validate_callback' => 'is_numeric',
+                'sanitize_callback' => 'absint',
+            ),
+            'lang' => array(
+                'required'          => false,
+                'default'           => null,
+                'sanitize_callback' => 'sanitize_text_field',
+            ),
+        ),
+    ) );
 }
 add_action( 'rest_api_init', 'map_register_rest_routes' );
 
@@ -112,5 +130,172 @@ function map_rest_get_jobs( WP_REST_Request $request ) {
         'jobs'        => $jobs,
         'total'       => (int) $query->found_posts,
         'total_pages' => (int) $query->max_num_pages,
+    ), 200 );
+}
+
+/**
+ * REST API -callback: palauttaa yksittäisen työpaikan ja siihen liittyvän infopaketin tiedot.
+ *
+ * @param WP_REST_Request $request Pyyntö.
+ * @return WP_REST_Response|WP_Error JSON-vastaus tai virhe.
+ */
+function map_rest_get_job_info( WP_REST_Request $request ) {
+    $post_id = absint( $request->get_param( 'id' ) );
+    $lang    = $request->get_param( 'lang' );
+
+    // Validoi kielikoodi
+    if ( $lang !== null && function_exists( 'map_normalize_lang_code' ) ) {
+        $lang = map_normalize_lang_code( $lang );
+    } elseif ( $lang !== null ) {
+        $lang = in_array( $lang, array( 'fi', 'en', 'sv', 'it' ), true ) ? $lang : 'fi';
+    }
+
+    // Tunnista kieli jos ei annettu
+    if ( empty( $lang ) ) {
+        $lang = function_exists( 'map_get_current_lang' ) ? map_get_current_lang() : 'fi';
+    }
+
+    $post = get_post( $post_id );
+
+    if ( ! $post || $post->post_type !== 'avoimet_tyopaikat' || $post->post_status !== 'publish' ) {
+        return new WP_Error(
+            'job_not_found',
+            __( 'Työpaikkaa ei löydy.', 'my-aggregator-plugin' ),
+            array( 'status' => 404 )
+        );
+    }
+
+    // Hakemisen URL
+    $form_url  = get_post_meta( $post_id, 'job_form_url', true );
+    $rss_link  = get_post_meta( $post_id, 'original_rss_link', true );
+    $apply_url = ! empty( $form_url ) ? $form_url : $rss_link;
+
+    $job_data = array(
+        'id'          => $post_id,
+        'title'       => $post->post_title,
+        'excerpt'     => get_the_excerpt( $post ),
+        'description' => wp_kses_post( $post->post_content ),
+        'apply_url'   => esc_url_raw( $apply_url ),
+        'country'     => get_post_meta( $post_id, 'job_country', true ),
+        'city'        => get_post_meta( $post_id, 'job_city', true ),
+        'job_type'    => get_post_meta( $post_id, 'job_type', true ),
+        'worktime'    => get_post_meta( $post_id, 'job_worktime', true ),
+    );
+
+    // Hae infopaketti
+    $infopackage_data = null;
+    if ( function_exists( 'map_resolve_infopackage' ) ) {
+        $pkg_id = map_resolve_infopackage( $post_id, $lang );
+
+        if ( $pkg_id ) {
+            $pkg_post = get_post( $pkg_id );
+
+            if ( $pkg_post && $pkg_post->post_status === 'publish' ) {
+                // Perustiedot
+                $intro      = get_post_meta( $pkg_id, '_map_info_intro', true );
+                $highlights = get_post_meta( $pkg_id, '_map_info_highlights', true );
+                $video_url  = get_post_meta( $pkg_id, '_map_info_video_url', true );
+                $gallery    = get_post_meta( $pkg_id, '_map_info_gallery', true );
+                $questions  = get_post_meta( $pkg_id, '_map_info_questions', true );
+
+                // Yhteyshenkilö
+                $contact_name  = get_post_meta( $pkg_id, '_map_info_contact_name', true );
+                $contact_email = get_post_meta( $pkg_id, '_map_info_contact_email', true );
+                $contact_phone = get_post_meta( $pkg_id, '_map_info_contact_phone', true );
+
+                // Highlights arrayksi
+                $highlights_arr = array();
+                if ( ! empty( $highlights ) ) {
+                    if ( is_array( $highlights ) ) {
+                        $highlights_arr = array_values( array_filter( array_map( 'sanitize_text_field', $highlights ) ) );
+                    } elseif ( is_string( $highlights ) ) {
+                        $decoded = json_decode( $highlights, true );
+                        if ( is_array( $decoded ) ) {
+                            $highlights_arr = array_values( array_filter( array_map( 'sanitize_text_field', $decoded ) ) );
+                        }
+                    }
+                }
+
+                // Galleria arrayksi
+                $gallery_arr = array();
+                if ( ! empty( $gallery ) ) {
+                    if ( is_array( $gallery ) ) {
+                        $gallery_arr = array_values( array_filter( array_map( 'esc_url_raw', $gallery ) ) );
+                    } elseif ( is_string( $gallery ) ) {
+                        $decoded = json_decode( $gallery, true );
+                        if ( is_array( $decoded ) ) {
+                            $gallery_arr = array_values( array_filter( array_map( 'esc_url_raw', $decoded ) ) );
+                        }
+                    }
+                }
+
+                // Kysymykset arrayksi
+                $questions_arr = array();
+                if ( ! empty( $questions ) ) {
+                    if ( is_array( $questions ) ) {
+                        $questions_arr = $questions;
+                    } elseif ( is_string( $questions ) ) {
+                        $decoded = json_decode( $questions, true );
+                        if ( is_array( $decoded ) ) {
+                            $questions_arr = $decoded;
+                        }
+                    }
+                }
+
+                // Sanitoi kysymykset
+                $sanitized_questions = array();
+                foreach ( $questions_arr as $q ) {
+                    if ( ! is_array( $q ) ) {
+                        continue;
+                    }
+                    $sanitized_questions[] = array(
+                        'question'           => isset( $q['question'] ) ? sanitize_text_field( $q['question'] ) : '',
+                        'type'               => isset( $q['type'] ) ? sanitize_key( $q['type'] ) : 'text',
+                        'options'            => isset( $q['options'] ) ? sanitize_textarea_field( $q['options'] ) : '',
+                        'required'           => ! empty( $q['required'] ),
+                        'unsuitable_value'   => isset( $q['unsuitable_value'] ) ? sanitize_text_field( $q['unsuitable_value'] ) : '',
+                        'unsuitable_feedback' => isset( $q['unsuitable_feedback'] ) ? sanitize_textarea_field( $q['unsuitable_feedback'] ) : '',
+                    );
+                }
+
+                // Saatavilla olevat kieliversiot
+                $available_langs   = function_exists( 'map_get_available_languages' ) ? map_get_available_languages() : array( 'fi', 'en', 'sv', 'it' );
+                $lang_availability = array();
+                foreach ( $available_langs as $l ) {
+                    if ( function_exists( 'map_get_translated_package_id' ) ) {
+                        $translated_id         = map_get_translated_package_id( $pkg_id, $l );
+                        $lang_availability[ $l ] = $translated_id && get_post_status( $translated_id ) === 'publish';
+                    } else {
+                        $lang_availability[ $l ] = ( $l === $lang );
+                    }
+                }
+
+                $infopackage_data = array(
+                    'id'                  => $pkg_id,
+                    'title'               => $pkg_post->post_title,
+                    'intro'               => wp_kses_post( $intro ),
+                    'highlights'          => $highlights_arr,
+                    'video_url'           => esc_url_raw( (string) $video_url ),
+                    'gallery'             => $gallery_arr,
+                    'questions'           => $sanitized_questions,
+                    'contact'             => array(
+                        'name'  => sanitize_text_field( (string) $contact_name ),
+                        'email' => sanitize_email( (string) $contact_email ),
+                        'phone' => sanitize_text_field( (string) $contact_phone ),
+                    ),
+                    'available_languages' => $lang_availability,
+                );
+            }
+        }
+    }
+
+    // i18n-käännökset frontendille
+    $i18n = function_exists( 'map_get_js_translations' ) ? map_get_js_translations( $lang ) : array();
+
+    return new WP_REST_Response( array(
+        'job'         => $job_data,
+        'infopackage' => $infopackage_data,
+        'lang'        => $lang,
+        'i18n'        => $i18n,
     ), 200 );
 }
