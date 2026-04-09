@@ -25,7 +25,7 @@ function tjobs_register_cpt_infopackage() {
         'labels'              => $labels,
         'public'              => false,
         'show_ui'             => true,
-        'show_in_menu'        => 'tjobs-settings',
+        'show_in_menu'        => 'tjobs-v2-settings',
         'show_in_rest'        => true,
         'supports'            => array( 'title' ),
         'capability_type'     => 'post',
@@ -127,8 +127,8 @@ elseif ( function_exists( 'wpml_get_language_information' ) ) {
     }
 }
 
-echo '<div style="padding:10px; background:#f0f0f0; border-radius:4px; text-align:center; font-weight:bold;">';
-echo esc_html( tjobs_i18n( 'admin.language_version' ) ) . ': <span style="color:#2271b1;">' . esc_html( $current_lang ) . '</span>';
+echo '<div class="tjobs-metabox-lang-badge">';
+echo esc_html( tjobs_i18n( 'admin.language_version' ) ) . ': <span class="tjobs-lang-code">' . esc_html( $current_lang ) . '</span>';
 echo '</div>';
 }
 
@@ -149,60 +149,79 @@ if ( ! is_array( $highlights ) ) {
 }
 
 ?>
-<p>
-    <label for="tjobs_info_intro"><strong><?php _e( 'Esittelyteksti', 'tapojarvijobs' ); ?></strong></label><br>
-    <textarea id="tjobs_info_intro" name="tjobs_info_intro" rows="5" style="width:100%;"><?php echo esc_textarea( $intro ); ?></textarea>
-</p>
-
-<div>
-    <label><strong><?php _e( 'Highlights / Nostot', 'tapojarvijobs' ); ?></strong></label>
-    <div id="tjobs-highlights-container">
-        <?php
-        if ( ! empty( $highlights ) ) {
-            foreach ( $highlights as $index => $highlight ) {
-                ?>
-                <div class="tjobs-highlight-row" style="margin-bottom:8px; display:flex; align-items:center;">
-                    <input type="text" name="tjobs_info_highlights[]" value="<?php echo esc_attr( $highlight ); ?>" style="flex:1; margin-right:8px;" />
-                    <button type="button" class="button tjobs-remove-highlight">Poista</button>
-                </div>
-                <?php
-            }
-        }
-        ?>
+<div class="tjobs-metabox-wrap">
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-metabox-label" for="tjobs_info_intro">
+            <?php esc_html_e( 'Esittelyteksti', 'tapojarvijobs' ); ?>
+        </label>
+        <textarea id="tjobs_info_intro" name="tjobs_info_intro" rows="5" class="tjobs-metabox-textarea"><?php echo esc_textarea( $intro ); ?></textarea>
     </div>
-    <button type="button" id="tjobs-add-highlight" class="button">+ Lisää highlight</button>
+
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-metabox-label">
+            <?php esc_html_e( 'Highlights / Nostot', 'tapojarvijobs' ); ?>
+            <span class="tjobs-metabox-desc"><?php esc_html_e( 'Lyhyitä nostokohtia infopaketista', 'tapojarvijobs' ); ?></span>
+        </label>
+        <div id="tjobs-highlights-container" class="tjobs-metabox-list">
+            <?php
+            if ( ! empty( $highlights ) ) {
+                foreach ( $highlights as $index => $highlight ) {
+                    ?>
+                    <div class="tjobs-list-row">
+                        <input type="text" name="tjobs_info_highlights[]" value="<?php echo esc_attr( $highlight ); ?>" class="tjobs-metabox-input" />
+                        <button type="button" class="tjobs-metabox-btn tjobs-metabox-btn-remove tjobs-remove-highlight" aria-label="<?php esc_attr_e( 'Poista', 'tapojarvijobs' ); ?>">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+        <button type="button" id="tjobs-add-highlight" class="tjobs-metabox-btn tjobs-metabox-btn-add">
+            <span class="dashicons dashicons-plus-alt2"></span>
+            <?php esc_html_e( 'Lisää highlight', 'tapojarvijobs' ); ?>
+        </button>
+    </div>
+
+    <div class="tjobs-metabox-section-title"><?php esc_html_e( 'Yhteyshenkilö', 'tapojarvijobs' ); ?></div>
+    <div class="tjobs-metabox-grid">
+        <div class="tjobs-metabox-field">
+            <label class="tjobs-metabox-label" for="tjobs_info_contact_name">
+                <?php esc_html_e( 'Nimi', 'tapojarvijobs' ); ?>
+            </label>
+            <input type="text" id="tjobs_info_contact_name" name="tjobs_info_contact_name" value="<?php echo esc_attr( $contact_name ); ?>" class="tjobs-metabox-input" />
+        </div>
+        <div class="tjobs-metabox-field">
+            <label class="tjobs-metabox-label" for="tjobs_info_contact_email">
+                <?php esc_html_e( 'Sähköposti', 'tapojarvijobs' ); ?>
+            </label>
+            <input type="email" id="tjobs_info_contact_email" name="tjobs_info_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" class="tjobs-metabox-input" />
+        </div>
+        <div class="tjobs-metabox-field">
+            <label class="tjobs-metabox-label" for="tjobs_info_contact_phone">
+                <?php esc_html_e( 'Puhelin', 'tapojarvijobs' ); ?>
+            </label>
+            <input type="text" id="tjobs_info_contact_phone" name="tjobs_info_contact_phone" value="<?php echo esc_attr( $contact_phone ); ?>" class="tjobs-metabox-input" />
+        </div>
+    </div>
 </div>
-
-<hr style="margin:20px 0;" />
-
-<h4><?php _e( 'Yhteyshenkilö', 'tapojarvijobs' ); ?></h4>
-<p>
-    <label><?php _e( 'Nimi', 'tapojarvijobs' ); ?></label><br>
-    <input type="text" name="tjobs_info_contact_name" value="<?php echo esc_attr( $contact_name ); ?>" style="width:100%;" />
-</p>
-<p>
-    <label><?php _e( 'Sähköposti', 'tapojarvijobs' ); ?></label><br>
-    <input type="email" name="tjobs_info_contact_email" value="<?php echo esc_attr( $contact_email ); ?>" style="width:100%;" />
-</p>
-<p>
-    <label><?php _e( 'Puhelin', 'tapojarvijobs' ); ?></label><br>
-    <input type="text" name="tjobs_info_contact_phone" value="<?php echo esc_attr( $contact_phone ); ?>" style="width:100%;" />
-</p>
 
 <script>
 jQuery(document).ready(function($) {
     // Add highlight
     $('#tjobs-add-highlight').on('click', function() {
-        var html = '<div class="tjobs-highlight-row" style="margin-bottom:8px; display:flex; align-items:center;">' +
-            '<input type="text" name="tjobs_info_highlights[]" value="" style="flex:1; margin-right:8px;" />' +
-            '<button type="button" class="button tjobs-remove-highlight">Poista</button>' +
+        var html = '<div class="tjobs-list-row">' +
+            '<input type="text" name="tjobs_info_highlights[]" value="" class="tjobs-metabox-input" />' +
+            '<button type="button" class="tjobs-metabox-btn tjobs-metabox-btn-remove tjobs-remove-highlight" aria-label="Poista"><span class="dashicons dashicons-trash"></span></button>' +
             '</div>';
         $('#tjobs-highlights-container').append(html);
+        $('#tjobs-highlights-container .tjobs-list-row:last-child input').focus();
     });
 
     // Remove highlight
     $(document).on('click', '.tjobs-remove-highlight', function() {
-        $(this).closest('.tjobs-highlight-row').remove();
+        $(this).closest('.tjobs-list-row').remove();
     });
 });
 </script>
@@ -221,41 +240,41 @@ if ( ! is_array( $gallery ) ) {
 }
 
 ?>
-<div style="margin-bottom:20px;">
-    <h4><?php _e( 'Video', 'tapojarvijobs' ); ?></h4>
-    <p>
-        <label><?php _e( 'YouTube tai Vimeo URL', 'tapojarvijobs' ); ?></label><br>
-        <input type="url" name="tjobs_info_video_url" id="tjobs_info_video_url" value="<?php echo esc_attr( $video_url ); ?>" style="width:100%;" placeholder="https://www.youtube.com/watch?v=xxxxx tai https://vimeo.com/xxxxx" />
-    </p>
-    <p class="description">
-        <?php _e( 'Syötä YouTube tai Vimeo videon URL. URL parsitaan automaattisesti embed-muotoon.', 'tapojarvijobs' ); ?>
-    </p>
-</div>
-
-<hr style="margin:20px 0;" />
-
-<div>
-    <h4><?php _e( 'Kuvagalleria', 'tapojarvijobs' ); ?></h4>
-    <div id="tjobs-gallery-container" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-        <?php
-        foreach ( $gallery as $attachment_id ) {
-            $image_url = wp_get_attachment_image_url( $attachment_id, 'thumbnail' );
-            if ( $image_url ) {
-                ?>
-                <div class="tjobs-gallery-item" data-id="<?php echo esc_attr( $attachment_id ); ?>" style="position:relative; width:100px; height:100px;">
-                    <img src="<?php echo esc_url( $image_url ); ?>" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" />
-                    <button type="button" class="tjobs-remove-gallery-item" style="position:absolute; top:2px; right:2px; width:24px; height:24px; padding:0; background:#ef4444; color:#fff; border:none; border-radius:50%; cursor:pointer; font-size:16px; line-height:1;">&times;</button>
-                    <input type="hidden" name="tjobs_info_gallery[]" value="<?php echo esc_attr( $attachment_id ); ?>" />
-                </div>
-                <?php
-            }
-        }
-        ?>
+<div class="tjobs-metabox-wrap">
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-metabox-label" for="tjobs_info_video_url">
+            <?php esc_html_e( 'Video', 'tapojarvijobs' ); ?>
+            <span class="tjobs-metabox-desc"><?php esc_html_e( 'YouTube tai Vimeo URL – parsitaan automaattisesti embed-muotoon', 'tapojarvijobs' ); ?></span>
+        </label>
+        <input type="url" name="tjobs_info_video_url" id="tjobs_info_video_url" value="<?php echo esc_attr( $video_url ); ?>" class="tjobs-metabox-input" placeholder="https://www.youtube.com/watch?v=xxxxx" />
     </div>
-    <button type="button" id="tjobs-add-gallery-images" class="button">+ Lisää kuvia</button>
-    <p class="description">
-        <?php _e( 'Kuvat näytetään modalissa galleria-näkymässä.', 'tapojarvijobs' ); ?>
-    </p>
+
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-metabox-label">
+            <?php esc_html_e( 'Kuvagalleria', 'tapojarvijobs' ); ?>
+            <span class="tjobs-metabox-desc"><?php esc_html_e( 'Kuvat näytetään modalissa galleria-näkymässä', 'tapojarvijobs' ); ?></span>
+        </label>
+        <div id="tjobs-gallery-container" class="tjobs-gallery-grid">
+            <?php
+            foreach ( $gallery as $attachment_id ) {
+                $image_url = wp_get_attachment_image_url( $attachment_id, 'thumbnail' );
+                if ( $image_url ) {
+                    ?>
+                    <div class="tjobs-gallery-item" data-id="<?php echo esc_attr( $attachment_id ); ?>">
+                        <img src="<?php echo esc_url( $image_url ); ?>" alt="" />
+                        <button type="button" class="tjobs-gallery-remove tjobs-remove-gallery-item" aria-label="<?php esc_attr_e( 'Poista', 'tapojarvijobs' ); ?>">&times;</button>
+                        <input type="hidden" name="tjobs_info_gallery[]" value="<?php echo esc_attr( $attachment_id ); ?>" />
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+        <button type="button" id="tjobs-add-gallery-images" class="tjobs-metabox-btn tjobs-metabox-btn-add">
+            <span class="dashicons dashicons-format-gallery"></span>
+            <?php esc_html_e( 'Lisää kuvia', 'tapojarvijobs' ); ?>
+        </button>
+    </div>
 </div>
 
 <script>
@@ -283,9 +302,10 @@ jQuery(document).ready(function($) {
             var attachments = mapMediaUploader.state().get('selection').toJSON();
             
             attachments.forEach(function(attachment) {
-                var html = '<div class="tjobs-gallery-item" data-id="' + attachment.id + '" style="position:relative; width:100px; height:100px;">' +
-                    '<img src="' + attachment.sizes.thumbnail.url + '" style="width:100%; height:100%; object-fit:cover; border-radius:4px;" />' +
-                    '<button type="button" class="tjobs-remove-gallery-item" style="position:absolute; top:2px; right:2px; width:24px; height:24px; padding:0; background:#ef4444; color:#fff; border:none; border-radius:50%; cursor:pointer; font-size:16px; line-height:1;">&times;</button>' +
+                var thumbUrl = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
+                var html = '<div class="tjobs-gallery-item" data-id="' + attachment.id + '">' +
+                    '<img src="' + thumbUrl + '" alt="" />' +
+                    '<button type="button" class="tjobs-gallery-remove tjobs-remove-gallery-item" aria-label="Poista">&times;</button>' +
                     '<input type="hidden" name="tjobs_info_gallery[]" value="' + attachment.id + '" />' +
                     '</div>';
                 $('#tjobs-gallery-container').append(html);
@@ -314,16 +334,21 @@ if ( ! is_array( $questions ) ) {
 }
 
 ?>
-<div id="tjobs-questions-container">
-    <?php
-    if ( ! empty( $questions ) ) {
-        foreach ( $questions as $index => $q ) {
-            tjobs_render_question_row( $index, $q );
+<div class="tjobs-metabox-wrap">
+    <div id="tjobs-questions-container">
+        <?php
+        if ( ! empty( $questions ) ) {
+            foreach ( $questions as $index => $q ) {
+                tjobs_render_question_row( $index, $q );
+            }
         }
-    }
-    ?>
+        ?>
+    </div>
+    <button type="button" id="tjobs-add-question" class="tjobs-metabox-btn tjobs-metabox-btn-add">
+        <span class="dashicons dashicons-plus-alt2"></span>
+        <?php esc_html_e( 'Lisää kysymys', 'tapojarvijobs' ); ?>
+    </button>
 </div>
-<button type="button" id="tjobs-add-question" class="button">+ Lisää kysymys</button>
 
 <script>
 jQuery(document).ready(function($) {
@@ -373,61 +398,72 @@ $unsuitable_feedback = isset( $data['unsuitable_feedback'] ) ? $data['unsuitable
 
 $show_options = ( $type === 'select' );
 ?>
-<div class="tjobs-question-row" style="border:1px solid #ddd; padding:15px; margin-bottom:15px; background:#f9f9f9; border-radius:4px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-        <strong>Kysymys #<?php echo esc_html( $index + 1 ); ?></strong>
-        <button type="button" class="button tjobs-remove-question">Poista</button>
+<div class="tjobs-question-row">
+    <div class="tjobs-question-header">
+        <strong><?php echo esc_html( sprintf( __( 'Kysymys #%d', 'tapojarvijobs' ), $index + 1 ) ); ?></strong>
+        <button type="button" class="tjobs-metabox-btn tjobs-metabox-btn-remove tjobs-remove-question" aria-label="<?php esc_attr_e( 'Poista', 'tapojarvijobs' ); ?>">
+            <span class="dashicons dashicons-trash"></span>
+        </button>
     </div>
 
-    <p>
-        <label>Kysymysteksti</label><br>
-        <input type="text" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][question]" value="<?php echo esc_attr( $question ); ?>" style="width:100%;" />
-    </p>
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-metabox-label"><?php esc_html_e( 'Kysymysteksti', 'tapojarvijobs' ); ?></label>
+        <input type="text" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][question]" value="<?php echo esc_attr( $question ); ?>" class="tjobs-metabox-input" />
+    </div>
 
-    <p>
-        <label>Tyyppi</label><br>
-        <select name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][type]" class="tjobs-question-type">
-            <option value="text" <?php selected( $type, 'text' ); ?>>Text (textarea)</option>
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-metabox-label"><?php esc_html_e( 'Tyyppi', 'tapojarvijobs' ); ?></label>
+        <select name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][type]" class="tjobs-metabox-select tjobs-question-type">
+            <option value="text"  <?php selected( $type, 'text' ); ?>>Text (textarea)</option>
             <option value="yesno" <?php selected( $type, 'yesno' ); ?>>Yes/No</option>
             <option value="scale" <?php selected( $type, 'scale' ); ?>>Scale (1-5)</option>
             <option value="select" <?php selected( $type, 'select' ); ?>>Select (dropdown)</option>
-            <option value="info" <?php selected( $type, 'info' ); ?>>Info (vain teksti)</option>
+            <option value="info"  <?php selected( $type, 'info' ); ?>>Info (vain teksti)</option>
         </select>
-    </p>
-
-    <div class="tjobs-question-options-wrapper" style="<?php echo $show_options ? '' : 'display:none;'; ?>">
-        <label>Vaihtoehdot (yksi per rivi, vain select-tyypille)</label><br>
-        <textarea name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][options]" rows="3" style="width:100%;"><?php echo esc_textarea( $options ); ?></textarea>
     </div>
 
-    <p>
-        <label>
-            <input type="checkbox" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][required]" value="1" <?php checked( $required, true ); ?> />
-            Pakollinen
+    <div class="tjobs-metabox-field tjobs-question-options-wrapper" <?php echo $show_options ? '' : 'style="display:none;"'; ?>>
+        <label class="tjobs-metabox-label">
+            <?php esc_html_e( 'Vaihtoehdot', 'tapojarvijobs' ); ?>
+            <span class="tjobs-metabox-desc"><?php esc_html_e( 'Yksi per rivi, vain select-tyypille', 'tapojarvijobs' ); ?></span>
         </label>
-    </p>
+        <textarea name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][options]" rows="3" class="tjobs-metabox-textarea"><?php echo esc_textarea( $options ); ?></textarea>
+    </div>
 
-    <hr style="margin:15px 0; border-top:1px dashed #ccc;" />
-    <p>
-        <label><strong>Epäsopivuuspalaute (valinnainen)</strong></label><br>
-        <small style="color:#666;">Jos vastaaja valitsee "epäsopivan" arvon, näytetään kohtelias palaute.</small>
-    </p>
-    <p>
-        <label>Epäsopiva arvo</label><br>
-        <input type="text" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][unsuitable_value]" value="<?php echo esc_attr( $unsuitable_value ); ?>" style="width:100%;" placeholder="Esim: no, 1, 2 (pilkulla erotettuna)" />
-        <small style="color:#999;">Yes/No: <code>no</code> | Scale: <code>1,2</code> | Select: vaihtoehdon teksti</small>
-    </p>
-    <p>
-        <label>Palauteviesti</label><br>
-        <textarea name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][unsuitable_feedback]" rows="2" style="width:100%;" placeholder="Esim: Tämä tehtävä saattaa vaatia tätä ominaisuutta. Voit silti jatkaa hakemista!"><?php echo esc_textarea( $unsuitable_feedback ); ?></textarea>
-    </p>
-    <?php if ( ! empty( $unsuitable_value ) ) : ?>
-    <p style="margin-top:5px;">
-        <span style="background:#fef3c7; border:1px solid #f59e0b; border-radius:4px; padding:2px 8px; font-size:11px; color:#92400e;">
-            💡 Palaute aktivoituu arvo(i)lla: <code><?php echo esc_html( $unsuitable_value ); ?></code>
-        </span>
-    </p>
-    <?php endif; ?>
+    <div class="tjobs-metabox-field">
+        <label class="tjobs-toggle-label">
+            <span class="tjobs-toggle">
+                <input type="checkbox" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][required]" value="1" <?php checked( $required, true ); ?> />
+                <span class="tjobs-toggle-slider"></span>
+            </span>
+            <?php esc_html_e( 'Pakollinen', 'tapojarvijobs' ); ?>
+        </label>
+    </div>
+
+    <div class="tjobs-question-unsuitable">
+        <div class="tjobs-metabox-section-title">
+            <?php esc_html_e( 'Epäsopivuuspalaute (valinnainen)', 'tapojarvijobs' ); ?>
+            <span class="tjobs-metabox-desc"><?php esc_html_e( 'Näytetään, jos vastaaja valitsee epäsopivan arvon', 'tapojarvijobs' ); ?></span>
+        </div>
+        <div class="tjobs-metabox-grid">
+            <div class="tjobs-metabox-field">
+                <label class="tjobs-metabox-label">
+                    <?php esc_html_e( 'Epäsopiva arvo', 'tapojarvijobs' ); ?>
+                    <span class="tjobs-metabox-desc"><?php esc_html_e( 'yes/no: no | scale: 1,2 | select: vaihtoehdon teksti', 'tapojarvijobs' ); ?></span>
+                </label>
+                <input type="text" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][unsuitable_value]" value="<?php echo esc_attr( $unsuitable_value ); ?>" class="tjobs-metabox-input" placeholder="<?php esc_attr_e( 'Esim: no, 1, 2 (pilkulla erotettuna)', 'tapojarvijobs' ); ?>" />
+                <?php if ( ! empty( $unsuitable_value ) ) : ?>
+                <span class="tjobs-unsuitable-hint">
+                    💡 <?php echo esc_html( sprintf( __( 'Palaute aktivoituu arvo(i)lla: %s', 'tapojarvijobs' ), $unsuitable_value ) ); ?>
+                </span>
+                <?php endif; ?>
+            </div>
+            <div class="tjobs-metabox-field">
+                <label class="tjobs-metabox-label"><?php esc_html_e( 'Palauteviesti', 'tapojarvijobs' ); ?></label>
+                <textarea name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][unsuitable_feedback]" rows="2" class="tjobs-metabox-textarea" placeholder="<?php esc_attr_e( 'Esim: Tämä tehtävä saattaa vaatia tätä ominaisuutta. Voit silti jatkaa hakemista!', 'tapojarvijobs' ); ?>"><?php echo esc_textarea( $unsuitable_feedback ); ?></textarea>
+            </div>
+        </div>
+    </div>
 </div>
 <?php
 }
@@ -450,18 +486,27 @@ function tjobs_render_infopackage_automation_meta_box( $post ) {
     $auto_keywords = get_post_meta( $post->ID, '_tjobs_info_auto_keywords', true );
 
     ?>
-    <p>
-        <label><?php _e( 'Sijainti sisältää (pilkulla erotetut)', 'tapojarvijobs' ); ?></label><br>
-        <input type="text" name="tjobs_info_auto_location" value="<?php echo esc_attr( $auto_location ); ?>" style="width:100%;" placeholder="Helsinki, Espoo, Vantaa" />
-    </p>
-<p>
-    <label><?php _e( 'Otsikko sisältää (pilkulla erotetut)', 'tapojarvijobs' ); ?></label><br>
-    <input type="text" name="tjobs_info_auto_keywords" value="<?php echo esc_attr( $auto_keywords ); ?>" style="width:100%;" placeholder="kehittäjä, designer" />
-</p>
-<p class="description">
-    <?php _e( 'Huom: Automaatiosäännöt ovat kieliriippumattomia ja pisteyttävät työpaikkoja automaattisesti.', 'tapojarvijobs' ); ?>
-</p>
-<?php
+    <div class="tjobs-metabox-wrap">
+        <div class="tjobs-metabox-field">
+            <label class="tjobs-metabox-label" for="tjobs_info_auto_location">
+                <?php esc_html_e( 'Sijainti sisältää', 'tapojarvijobs' ); ?>
+                <span class="tjobs-metabox-desc"><?php esc_html_e( 'Pilkulla erotettuna', 'tapojarvijobs' ); ?></span>
+            </label>
+            <input type="text" id="tjobs_info_auto_location" name="tjobs_info_auto_location" value="<?php echo esc_attr( $auto_location ); ?>" class="tjobs-metabox-input" placeholder="Helsinki, Espoo, Vantaa" />
+        </div>
+        <div class="tjobs-metabox-field">
+            <label class="tjobs-metabox-label" for="tjobs_info_auto_keywords">
+                <?php esc_html_e( 'Otsikko sisältää', 'tapojarvijobs' ); ?>
+                <span class="tjobs-metabox-desc"><?php esc_html_e( 'Pilkulla erotettuna', 'tapojarvijobs' ); ?></span>
+            </label>
+            <input type="text" id="tjobs_info_auto_keywords" name="tjobs_info_auto_keywords" value="<?php echo esc_attr( $auto_keywords ); ?>" class="tjobs-metabox-input" placeholder="kehittäjä, designer" />
+        </div>
+        <p class="tjobs-metabox-notice">
+            <span class="dashicons dashicons-info"></span>
+            <?php esc_html_e( 'Automaatiosäännöt ovat kieliriippumattomia ja pisteyttävät työpaikkoja automaattisesti.', 'tapojarvijobs' ); ?>
+        </p>
+    </div>
+    <?php
 }
 
 /**

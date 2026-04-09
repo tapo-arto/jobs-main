@@ -6,10 +6,10 @@ if (!defined('ABSPATH')) {
 // Lisää asetussivu
 function tjobs_add_admin_menu() {
     add_menu_page(
-        'TJobs Asetukset',
-        'TJobs',
+        'Jobs V2 Asetukset',
+        'Jobs V2',
         'manage_options',
-        'tjobs-settings',
+        'tjobs-v2-settings',
         'tjobs_render_settings_page',
         'dashicons-businessman',
         80
@@ -100,7 +100,7 @@ $logs_to_display = array_slice( array_reverse( $import_log ), $offset, $logs_per
 
 // Tab-navigointi
 $active_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'settings'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-$tab_base   = admin_url( 'admin.php?page=tjobs-settings' );
+$tab_base   = admin_url( 'admin.php?page=tjobs-v2-settings' );
 
 // Viimeisin synkronointi
 $last_sync       = get_option( 'tjobs_last_sync', 0 );
@@ -278,8 +278,8 @@ $last_updated = isset( $last_sync_stats['updated'] ) ? (int) $last_sync_stats['u
     <!-- Header -->
     <div class="tjobs-header">
         <span class="dashicons dashicons-businessman"></span>
-        <h1>TJobs</h1>
-        <span class="tjobs-version">v4.0</span>
+        <h1>Jobs V2</h1>
+        <span class="tjobs-version">v4.0 V2</span>
     </div>
 
     <!-- Status chips -->

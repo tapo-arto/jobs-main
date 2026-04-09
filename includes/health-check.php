@@ -41,7 +41,7 @@ if ( empty( $feed_url ) ) {
     $result['status']      = 'recommended';
     $result['label']       = __( 'RSS-syötteen URL puuttuu', 'tapojarvijobs' );
     $result['description'] = '<p>' . __( 'My Aggregator Plugin -lisäosalle ei ole asetettu RSS-syötteen URL:ia. Aseta se lisäosan asetuksista.', 'tapojarvijobs' ) . '</p>';
-    $result['actions']     = '<a href="' . esc_url( admin_url( 'admin.php?page=tjobs-settings' ) ) . '">' . __( 'Siirry asetuksiin', 'tapojarvijobs' ) . '</a>';
+    $result['actions']     = '<a href="' . esc_url( admin_url( 'admin.php?page=tjobs-v2-settings' ) ) . '">' . __( 'Siirry asetuksiin', 'tapojarvijobs' ) . '</a>';
     return $result;
 }
 
