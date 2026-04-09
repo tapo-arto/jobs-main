@@ -41,7 +41,7 @@ if ( file_exists( $js_path ) ) {
         'tjobs-modal-js',
         'tjobsModalConfig',
         array(
-            'restUrl' => esc_url_raw( rest_url( 'tjobs/v1/job-info/' ) ),
+            'restUrl' => esc_url_raw( rest_url( 'tjobs/v1' ) ),
             'lang'    => $lang,
             'i18n'    => $i18n,
         )
@@ -216,9 +216,6 @@ if ( ! isset( $output ) ) {
     $output = '';
 }
 
-// Info-badge käännös
-$info_badge_text = function_exists( 'tjobs_i18n' ) ? tjobs_i18n( 'modal.info_badge', $lang_code ) : 'ℹ️ Lisätietoja';
-
 $output .= '<ul class="tjobs-job-list">';
 while ($query->have_posts()) {
     $query->the_post();
@@ -228,20 +225,9 @@ while ($query->have_posts()) {
     $link    = get_post_meta( $post_id, '_tjobs_rss_link', true );
     $excerpt = get_the_excerpt();
 
-    // Tarkista onko infopaketti saatavilla
-    $has_infopackage = function_exists( 'tjobs_resolve_infopackage' )
-        ? tjobs_resolve_infopackage( $post_id, $lang_code )
-        : null;
-
     $output .= '<li>';
     if ($link) {
-        if ( $has_infopackage ) {
-            // Linkki avaa modalin (data-job-id), varsinainen URL siirtyy CTA-napista
-            $output .= '<a href="' . esc_url( $link ) . '" data-job-id="' . esc_attr( $post_id ) . '" target="_blank" rel="noopener">' . esc_html( $title ) . '</a>';
-            $output .= '<span class="tjobs-info-badge">' . esc_html( $info_badge_text ) . '</span>';
-        } else {
-            $output .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener">' . esc_html( $title ) . '</a>';
-        }
+        $output .= '<a href="' . esc_url( $link ) . '" target="_blank" rel="noopener">' . esc_html( $title ) . '</a>';
     } else {
         // Jos linkkiä ei ole, näytetään pelkkä otsikko
         $output .= esc_html($title);
@@ -388,9 +374,6 @@ foreach ($countries as $code => $country_data) {
     $output .= '</div>';
 
     $output .= '<div class="tjobs-jobs-grid">';
-        // Info-badge käännös
-        $info_badge_text = function_exists( 'tjobs_i18n' ) ? tjobs_i18n( 'modal.info_badge', $lang_code ) : 'ℹ️ Lisätietoja';
-
         while ($query->have_posts()) {
             $query->the_post();
             $post_id  = get_the_ID();
@@ -411,15 +394,8 @@ foreach ($countries as $code => $country_data) {
             $output .= '<article class="tjobs-job-card">';
             $output .= '<div class="tjobs-job-card__content">';
 
-            // Otsikko: infopaketin kanssa avaa modalin, ilman menee suoraan hakemaan
-            if ( $has_infopackage && !empty( $apply_url ) ) {
-                $output .= '<h3 class="tjobs-job-card__title">';
-                $output .= '<a href="' . esc_url( $apply_url ) . '" data-job-id="' . esc_attr( $post_id ) . '" style="text-decoration:none;color:inherit;">' . esc_html( $title ) . '</a>';
-                $output .= ' <span class="tjobs-info-badge">' . esc_html( $info_badge_text ) . '</span>';
-                $output .= '</h3>';
-            } else {
-                $output .= '<h3 class="tjobs-job-card__title">' . esc_html($title) . '</h3>';
-            }
+            // Otsikko: pelkkä teksti ilman badge tai modal-attribuuttia
+            $output .= '<h3 class="tjobs-job-card__title">' . esc_html($title) . '</h3>';
 
             if (!empty($excerpt)) {
                 $output .= '<div class="tjobs-job-card__meta">';
@@ -451,9 +427,17 @@ foreach ($countries as $code => $country_data) {
 
             if (!empty($apply_url)) {
                 $output .= '<div class="tjobs-job-card__action">';
-                $output .= '<a href="' . esc_url($apply_url) . '" target="_blank" rel="noopener" class="tjobs-job-card__apply-btn">';
-                $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                $output .= '</a>';
+                if ( $has_infopackage ) {
+                    // Nappi avaa infopaketti-modalin
+                    $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
+                    $output .= '</button>';
+                } else {
+                    // Suora linkki hakemukseen
+                    $output .= '<a href="' . esc_url($apply_url) . '" target="_blank" rel="noopener" class="tjobs-job-card__apply-btn">';
+                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
+                    $output .= '</a>';
+                }
                 $output .= '</div>';
             }
 
