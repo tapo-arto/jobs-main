@@ -176,27 +176,27 @@ $desc_text_color  = preg_match('/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/', $opts['de
 
 // Dynaaminen inline-CSS väripäivityksiä varten
 $inline_css = '
-    .my-job-list {
+    .tjobs-job-list {
         list-style: none;
         padding: 0;
         margin: 0;
     }
-    .my-job-list li {
+    .tjobs-job-list li {
         margin-bottom: 20px;
         padding-bottom: 10px;
         border-bottom: 1px solid rgba(0, 0, 0, 0.25);
     }
-    .my-job-list a {
+    .tjobs-job-list a {
         color: ' . esc_attr( $link_color ) . ';
         text-decoration: none;
         font-weight: bold;
         font-size: 18px;
     }
-    .my-job-list a:hover {
+    .tjobs-job-list a:hover {
         color: ' . esc_attr( $link_hover_color ) . ';
         text-decoration: none;
     }
-    .my-job-list .description {
+    .tjobs-job-list .description {
         color: ' . esc_attr( $desc_text_color ) . ';
         font-size: 0.8rem;
         font-weight: 300;
@@ -219,7 +219,7 @@ if ( ! isset( $output ) ) {
 // Info-badge käännös
 $info_badge_text = function_exists( 'tjobs_i18n' ) ? tjobs_i18n( 'modal.info_badge', $lang_code ) : 'ℹ️ Lisätietoja';
 
-$output .= '<ul class="my-job-list">';
+$output .= '<ul class="tjobs-job-list">';
 while ($query->have_posts()) {
     $query->the_post();
 

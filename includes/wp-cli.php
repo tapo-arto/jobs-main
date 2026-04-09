@@ -18,7 +18,7 @@ class TJobs_CLI_Command extends WP_CLI_Command {
      *
      * ## EXAMPLES
      *
-     *     wp aggregator sync
+     *     wp tjobs sync
      *
      * @subcommand sync
      */

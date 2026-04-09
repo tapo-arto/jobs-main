@@ -172,11 +172,11 @@ foreach ($feed_items as $item) {
     }
 
     // Laura-namespacen kenttien lukeminen
-    $country_tag  = $item->get_item_tags($laura_ns, 'common__tjobs_country');
+    $country_tag  = $item->get_item_tags($laura_ns, 'common_job_country');
     $country_name = (!empty($country_tag[0]['data'])) ? trim($country_tag[0]['data']) : '';
     $country_code = tjobs_country_name_to_code($country_name);
 
-    $city_tag = $item->get_item_tags($laura_ns, 'common__tjobs_city');
+    $city_tag = $item->get_item_tags($laura_ns, 'common_job_city');
     $city     = (!empty($city_tag[0]['data'])) ? trim($city_tag[0]['data']) : '';
 
     $jobtype_tag = $item->get_item_tags($laura_ns, 'common_type');

@@ -119,7 +119,7 @@
         `;
 
         // Hae data
-        const restUrl = window.tjobsModalConfig ? window.tjobsModalConfig.restUrl : '/wp-json/map/v1';
+        const restUrl = window.tjobsModalConfig ? window.tjobsModalConfig.restUrl : '/wp-json/tjobs/v1';
         const url = `${restUrl}/job-info/${jobId}?lang=${lang}`;
 
         fetch(url)
@@ -702,7 +702,7 @@
 
         var banner = document.createElement('div');
         if (isGood) {
-            banner.className = 'tjobs-result-banner map-result-banner--good';
+            banner.className = 'tjobs-result-banner tjobs-result-banner--good';
             banner.innerHTML =
                 '<span class="tjobs-result-banner__icon">✅</span>' +
                 '<div class="tjobs-result-banner__body">' +
@@ -710,7 +710,7 @@
                     '<p class="tjobs-result-banner__text">' + escapeHtml(i18n['result.good_text'] || 'Vaikutat sopivalta tähän tehtävään.') + '</p>' +
                 '</div>';
         } else {
-            banner.className = 'tjobs-result-banner map-result-banner--guidance';
+            banner.className = 'tjobs-result-banner tjobs-result-banner--guidance';
             banner.innerHTML =
                 '<span class="tjobs-result-banner__icon">&#x1F4A1;</span>' +
                 '<div class="tjobs-result-banner__body">' +
