@@ -172,125 +172,132 @@ $apply_url = ! empty( $form_url ) ? $form_url : $rss_link;
 
 // Hae infopaketti
 $infopackage_data = null;
-if ( function_exists( 'tjobs_resolve_infopackage' ) ) {
-    $pkg_id = tjobs_resolve_infopackage( $post_id, $lang );
+try {
+    if ( function_exists( 'tjobs_resolve_infopackage' ) ) {
+        $pkg_id = tjobs_resolve_infopackage( $post_id, $lang );
 
-    if ( $pkg_id ) {
-        $pkg_post = get_post( $pkg_id );
+        if ( $pkg_id ) {
+            $pkg_post = get_post( $pkg_id );
 
-        if ( $pkg_post && $pkg_post->post_status === 'publish' ) {
-            // Perustiedot
-            $intro      = get_post_meta( $pkg_id, '_tjobs_info_intro', true );
-            $highlights = get_post_meta( $pkg_id, '_tjobs_info_highlights', true );
-            $video_url  = get_post_meta( $pkg_id, '_tjobs_info_video_url', true );
-            $gallery    = get_post_meta( $pkg_id, '_tjobs_info_gallery', true );
-            $questions  = get_post_meta( $pkg_id, '_tjobs_info_questions', true );
+            if ( $pkg_post && $pkg_post->post_status === 'publish' ) {
+                // Perustiedot
+                $intro      = get_post_meta( $pkg_id, '_tjobs_info_intro', true );
+                $highlights = get_post_meta( $pkg_id, '_tjobs_info_highlights', true );
+                $video_url  = get_post_meta( $pkg_id, '_tjobs_info_video_url', true );
+                $gallery    = get_post_meta( $pkg_id, '_tjobs_info_gallery', true );
+                $questions  = get_post_meta( $pkg_id, '_tjobs_info_questions', true );
 
-            // Yhteyshenkilö
-            $contact_name  = get_post_meta( $pkg_id, '_tjobs_info_contact_name', true );
-            $contact_email = get_post_meta( $pkg_id, '_tjobs_info_contact_email', true );
-            $contact_phone = get_post_meta( $pkg_id, '_tjobs_info_contact_phone', true );
+                // Yhteyshenkilö
+                $contact_name  = get_post_meta( $pkg_id, '_tjobs_info_contact_name', true );
+                $contact_email = get_post_meta( $pkg_id, '_tjobs_info_contact_email', true );
+                $contact_phone = get_post_meta( $pkg_id, '_tjobs_info_contact_phone', true );
 
-            // Highlights arrayksi
-            $highlights_arr = array();
-            if ( ! empty( $highlights ) ) {
-                if ( is_array( $highlights ) ) {
-                    $highlights_arr = array_values( array_filter( array_map( 'sanitize_text_field', $highlights ) ) );
-                } elseif ( is_string( $highlights ) ) {
-                    $decoded = json_decode( $highlights, true );
-                    if ( is_array( $decoded ) ) {
-                        $highlights_arr = array_values( array_filter( array_map( 'sanitize_text_field', $decoded ) ) );
+                // Highlights arrayksi
+                $highlights_arr = array();
+                if ( ! empty( $highlights ) ) {
+                    if ( is_array( $highlights ) ) {
+                        $highlights_arr = array_values( array_filter( array_map( 'sanitize_text_field', $highlights ) ) );
+                    } elseif ( is_string( $highlights ) ) {
+                        $decoded = json_decode( $highlights, true );
+                        if ( is_array( $decoded ) ) {
+                            $highlights_arr = array_values( array_filter( array_map( 'sanitize_text_field', $decoded ) ) );
+                        }
                     }
                 }
-            }
 
-            // Galleria arrayksi: palauta {id, url, thumb} objekteja
-            $gallery_arr = array();
-            if ( ! empty( $gallery ) ) {
-                $gallery_ids = array();
-                if ( is_array( $gallery ) ) {
-                    $gallery_ids = $gallery;
-                } elseif ( is_string( $gallery ) ) {
-                    $decoded = json_decode( $gallery, true );
-                    if ( is_array( $decoded ) ) {
-                        $gallery_ids = $decoded;
+                // Galleria arrayksi: palauta {id, url, thumb} objekteja
+                $gallery_arr = array();
+                if ( ! empty( $gallery ) ) {
+                    $gallery_ids = array();
+                    if ( is_array( $gallery ) ) {
+                        $gallery_ids = $gallery;
+                    } elseif ( is_string( $gallery ) ) {
+                        $decoded = json_decode( $gallery, true );
+                        if ( is_array( $decoded ) ) {
+                            $gallery_ids = $decoded;
+                        }
+                    }
+                    foreach ( $gallery_ids as $attachment_id ) {
+                        $attachment_id = absint( $attachment_id );
+                        if ( ! $attachment_id || ! wp_attachment_is_image( $attachment_id ) ) {
+                            continue;
+                        }
+                        $image_url = wp_get_attachment_image_url( $attachment_id, 'large' );
+                        $thumb_url = wp_get_attachment_image_url( $attachment_id, 'medium' );
+                        if ( $image_url ) {
+                            $gallery_arr[] = array(
+                                'id'    => $attachment_id,
+                                'url'   => $image_url,
+                                'thumb' => $thumb_url ? $thumb_url : $image_url,
+                            );
+                        }
                     }
                 }
-                foreach ( $gallery_ids as $attachment_id ) {
-                    $attachment_id = absint( $attachment_id );
-                    if ( ! $attachment_id || ! wp_attachment_is_image( $attachment_id ) ) {
+
+                // Kysymykset arrayksi
+                $questions_arr = array();
+                if ( ! empty( $questions ) ) {
+                    if ( is_array( $questions ) ) {
+                        $questions_arr = $questions;
+                    } elseif ( is_string( $questions ) ) {
+                        $decoded = json_decode( $questions, true );
+                        if ( is_array( $decoded ) ) {
+                            $questions_arr = $decoded;
+                        }
+                    }
+                }
+
+                // Sanitoi kysymykset
+                $sanitized_questions = array();
+                foreach ( $questions_arr as $q ) {
+                    if ( ! is_array( $q ) ) {
                         continue;
                     }
-                    $image_url = wp_get_attachment_image_url( $attachment_id, 'large' );
-                    $thumb_url = wp_get_attachment_image_url( $attachment_id, 'medium' );
-                    if ( $image_url ) {
-                        $gallery_arr[] = array(
-                            'id'    => $attachment_id,
-                            'url'   => $image_url,
-                            'thumb' => $thumb_url ? $thumb_url : $image_url,
-                        );
+                    $sanitized_questions[] = array(
+                        'question'            => isset( $q['question'] ) ? sanitize_text_field( $q['question'] ) : '',
+                        'type'                => isset( $q['type'] ) ? sanitize_key( $q['type'] ) : 'text',
+                        'options'             => isset( $q['options'] ) ? sanitize_textarea_field( $q['options'] ) : '',
+                        'required'            => ! empty( $q['required'] ),
+                        'unsuitable_value'    => isset( $q['unsuitable_value'] ) ? sanitize_text_field( $q['unsuitable_value'] ) : '',
+                        'unsuitable_feedback' => isset( $q['unsuitable_feedback'] ) ? sanitize_textarea_field( $q['unsuitable_feedback'] ) : '',
+                    );
+                }
+
+                // Saatavilla olevat kieliversiot
+                $available_langs   = function_exists( 'tjobs_get_available_languages' ) ? tjobs_get_available_languages() : array( 'fi', 'en', 'sv', 'it' );
+                $lang_availability = array();
+                foreach ( $available_langs as $l ) {
+                    if ( function_exists( 'tjobs_get_translated_package_id' ) ) {
+                        $translated_id           = tjobs_get_translated_package_id( $pkg_id, $l );
+                        $lang_availability[ $l ] = $translated_id && get_post_status( $translated_id ) === 'publish';
+                    } else {
+                        $lang_availability[ $l ] = ( $l === $lang );
                     }
                 }
-            }
 
-            // Kysymykset arrayksi
-            $questions_arr = array();
-            if ( ! empty( $questions ) ) {
-                if ( is_array( $questions ) ) {
-                    $questions_arr = $questions;
-                } elseif ( is_string( $questions ) ) {
-                    $decoded = json_decode( $questions, true );
-                    if ( is_array( $decoded ) ) {
-                        $questions_arr = $decoded;
-                    }
-                }
-            }
-
-            // Sanitoi kysymykset
-            $sanitized_questions = array();
-            foreach ( $questions_arr as $q ) {
-                if ( ! is_array( $q ) ) {
-                    continue;
-                }
-                $sanitized_questions[] = array(
-                    'question'           => isset( $q['question'] ) ? sanitize_text_field( $q['question'] ) : '',
-                    'type'               => isset( $q['type'] ) ? sanitize_key( $q['type'] ) : 'text',
-                    'options'            => isset( $q['options'] ) ? sanitize_textarea_field( $q['options'] ) : '',
-                    'required'           => ! empty( $q['required'] ),
-                    'unsuitable_value'   => isset( $q['unsuitable_value'] ) ? sanitize_text_field( $q['unsuitable_value'] ) : '',
-                    'unsuitable_feedback' => isset( $q['unsuitable_feedback'] ) ? sanitize_textarea_field( $q['unsuitable_feedback'] ) : '',
+                $infopackage_data = array(
+                    'id'                  => $pkg_id,
+                    'title'               => $pkg_post->post_title,
+                    'intro'               => wp_kses_post( (string) $intro ),
+                    'highlights'          => $highlights_arr,
+                    'video_url'           => esc_url_raw( (string) $video_url ),
+                    'gallery'             => $gallery_arr,
+                    'questions'           => $sanitized_questions,
+                    'contact'             => array(
+                        'name'  => sanitize_text_field( (string) $contact_name ),
+                        'email' => sanitize_email( (string) $contact_email ),
+                        'phone' => sanitize_text_field( (string) $contact_phone ),
+                    ),
+                    'available_languages' => $lang_availability,
                 );
             }
-
-            // Saatavilla olevat kieliversiot
-            $available_langs   = function_exists( 'tjobs_get_available_languages' ) ? tjobs_get_available_languages() : array( 'fi', 'en', 'sv', 'it' );
-            $lang_availability = array();
-            foreach ( $available_langs as $l ) {
-                if ( function_exists( 'tjobs_get_translated_package_id' ) ) {
-                    $translated_id         = tjobs_get_translated_package_id( $pkg_id, $l );
-                    $lang_availability[ $l ] = $translated_id && get_post_status( $translated_id ) === 'publish';
-                } else {
-                    $lang_availability[ $l ] = ( $l === $lang );
-                }
-            }
-
-            $infopackage_data = array(
-                'id'                  => $pkg_id,
-                'title'               => $pkg_post->post_title,
-                'intro'               => wp_kses_post( $intro ),
-                'highlights'          => $highlights_arr,
-                'video_url'           => esc_url_raw( (string) $video_url ),
-                'gallery'             => $gallery_arr,
-                'questions'           => $sanitized_questions,
-                'contact'             => array(
-                    'name'  => sanitize_text_field( (string) $contact_name ),
-                    'email' => sanitize_email( (string) $contact_email ),
-                    'phone' => sanitize_text_field( (string) $contact_phone ),
-                ),
-                'available_languages' => $lang_availability,
-            );
         }
     }
+} catch ( Throwable $e ) {
+    // Prevent any unexpected exception from returning a 500 error;
+    // infopackage data is simply omitted from the response.
+    error_log( 'TJobs REST API: infopackage resolution failed for post ' . $post_id . ': ' . $e->getMessage() );
+    $infopackage_data = null;
 }
 
 // i18n-käännökset frontendille
@@ -301,7 +308,7 @@ return new WP_REST_Response( array(
     'title'       => $post->post_title,
     'excerpt'     => get_the_excerpt( $post ),
     'description' => wp_kses_post( $post->post_content ),
-    'apply_url'   => esc_url_raw( $apply_url ),
+    'apply_url'   => esc_url_raw( (string) $apply_url ),
     'lang'        => $lang,
     'infopackage' => $infopackage_data,
     'i18n'        => $i18n,
