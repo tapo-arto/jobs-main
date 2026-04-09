@@ -23,6 +23,10 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/gutenberg-block.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/schema-markup.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/security-improvements.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/health-check.php';
+// Infopaketti-toiminto: i18n täytyy ladata ennen muita uusia tiedostoja
+require_once plugin_dir_path( __FILE__ ) . 'includes/i18n-strings.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/cpt-infopackage.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/automation-rules.php';
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
     require_once plugin_dir_path( __FILE__ ) . 'includes/wp-cli.php';
 }
