@@ -19,7 +19,7 @@
     function init() {
         // Käytä event delegation job-linkkien klikkauksiin
         document.addEventListener('click', function(e) {
-            const jobLink = e.target.closest('a[data-job-id]');
+            const jobLink = e.target.closest('[data-job-id]');
             if (jobLink) {
                 e.preventDefault();
                 const jobId = jobLink.getAttribute('data-job-id');

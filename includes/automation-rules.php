@@ -127,15 +127,6 @@ if ( $best_package_id ) {
     return tjobs_get_translated_package_id( $best_package_id, $lang );
 }
 
-// Fallback: jos vain yksi infopaketti olemassa, käytetään sitä
-if ( $packages_query->found_posts === 1 ) {
-    $packages_query->rewind_posts();
-    $packages_query->the_post();
-    $fallback_id = get_the_ID();
-    wp_reset_postdata();
-    return tjobs_get_translated_package_id( $fallback_id, $lang );
-}
-
 // Default infopackage fallback
 $opts        = tjobs_get_settings();
 $default_pkg = isset( $opts['default_infopackage'] ) ? absint( $opts['default_infopackage'] ) : 0;
