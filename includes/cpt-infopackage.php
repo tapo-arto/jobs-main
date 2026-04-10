@@ -125,10 +125,13 @@ $score_feedback_rules = get_post_meta( $post->ID, '_tjobs_score_feedback_rules',
 $auto_location = get_post_meta( $post->ID, '_tjobs_info_auto_location', true );
 $auto_keywords = get_post_meta( $post->ID, '_tjobs_info_auto_keywords', true );
 
+$sections = get_post_meta( $post->ID, '_tjobs_info_sections', true );
+
 if ( ! is_array( $highlights ) )           { $highlights = array(); }
 if ( ! is_array( $gallery ) )              { $gallery = array(); }
 if ( ! is_array( $questions ) )            { $questions = array(); }
 if ( ! is_array( $score_feedback_rules ) ) { $score_feedback_rules = array(); }
+if ( ! is_array( $sections ) )             { $sections = array(); }
 
 ?>
 <div class="tjobs-metabox-wrap">
@@ -136,6 +139,7 @@ if ( ! is_array( $score_feedback_rules ) ) { $score_feedback_rules = array(); }
     <!-- Tab navigation -->
     <div class="tjobs-admin-tabs__nav">
         <button type="button" class="tjobs-admin-tab-btn is-active" data-tab="general"><?php esc_html_e( 'Yleiset', 'tapojarvijobs' ); ?></button>
+        <button type="button" class="tjobs-admin-tab-btn" data-tab="sections"><?php esc_html_e( 'Tietosisällöt', 'tapojarvijobs' ); ?></button>
         <button type="button" class="tjobs-admin-tab-btn" data-tab="media"><?php esc_html_e( 'Media', 'tapojarvijobs' ); ?></button>
         <button type="button" class="tjobs-admin-tab-btn" data-tab="questions"><?php esc_html_e( 'Kysymykset & Palaute', 'tapojarvijobs' ); ?></button>
         <button type="button" class="tjobs-admin-tab-btn" data-tab="automation"><?php esc_html_e( 'Automaatio & Yhteystiedot', 'tapojarvijobs' ); ?></button>
@@ -174,7 +178,62 @@ if ( ! is_array( $score_feedback_rules ) ) { $score_feedback_rules = array(); }
 
     </div><!-- /tab general -->
 
-    <!-- ── TAB 2: Media ──────────────────────────────────────────────────── -->
+    <!-- ── TAB 2: Tietosisällöt ──────────────────────────────────────────── -->
+    <div class="tjobs-admin-tab-content" data-tab-content="sections">
+
+        <!-- Quick-add preset buttons -->
+        <div class="tjobs-section-presets">
+            <button type="button" class="tjobs-section-preset-btn" data-icon="🏠" data-fi="Asuminen" data-en="Housing" data-sv="Boende" data-it="Alloggio">🏠 <?php esc_html_e( 'Asuminen', 'tapojarvijobs' ); ?></button>
+            <button type="button" class="tjobs-section-preset-btn" data-icon="🏪" data-fi="Palvelut" data-en="Local Services" data-sv="Tjänster" data-it="Servizi">🏪 <?php esc_html_e( 'Palvelut', 'tapojarvijobs' ); ?></button>
+            <button type="button" class="tjobs-section-preset-btn" data-icon="🚗" data-fi="Kulkuyhteydet" data-en="Transportation" data-sv="Transport" data-it="Trasporti">🚗 <?php esc_html_e( 'Kulkuyhteydet', 'tapojarvijobs' ); ?></button>
+            <button type="button" class="tjobs-section-preset-btn" data-icon="💰" data-fi="Työsuhde-edut" data-en="Benefits" data-sv="Förmåner" data-it="Benefici">💰 <?php esc_html_e( 'Työsuhde-edut', 'tapojarvijobs' ); ?></button>
+            <button type="button" class="tjobs-section-preset-btn" data-icon="🌍" data-fi="Muutto ja relocation" data-en="Relocation" data-sv="Flytt och relokation" data-it="Trasferimento">🌍 <?php esc_html_e( 'Muutto ja relocation', 'tapojarvijobs' ); ?></button>
+            <button type="button" class="tjobs-section-preset-btn" data-icon="ℹ️" data-fi="Vapaa osio" data-en="Custom Section" data-sv="Fri sektion" data-it="Sezione libera">ℹ️ <?php esc_html_e( 'Vapaa osio', 'tapojarvijobs' ); ?></button>
+        </div>
+
+        <!-- Section repeater rows -->
+        <div id="tjobs-sections-container">
+            <?php
+            foreach ( $sections as $index => $section ) {
+                $s_icon    = isset( $section['icon'] ) ? $section['icon'] : '';
+                $s_title   = isset( $section['title'] ) ? $section['title'] : '';
+                $s_content = isset( $section['content'] ) ? $section['content'] : '';
+                ?>
+                <div class="tjobs-section-row">
+                    <div class="tjobs-section-header">
+                        <strong><?php echo esc_html( sprintf( __( 'Osio #%d', 'tapojarvijobs' ), $index + 1 ) ); ?></strong>
+                        <button type="button" class="tjobs-metabox-btn tjobs-metabox-btn-remove tjobs-remove-section" aria-label="<?php esc_attr_e( 'Poista', 'tapojarvijobs' ); ?>">
+                            <span class="dashicons dashicons-trash"></span>
+                        </button>
+                    </div>
+                    <div class="tjobs-metabox-grid tjobs-section-row__grid">
+                        <div class="tjobs-metabox-field">
+                            <label class="tjobs-metabox-label"><?php esc_html_e( 'Ikoni', 'tapojarvijobs' ); ?></label>
+                            <input type="text" name="tjobs_info_sections[<?php echo $index; ?>][icon]" value="<?php echo esc_attr( $s_icon ); ?>" class="tjobs-metabox-input" placeholder="🏠" />
+                        </div>
+                        <div class="tjobs-metabox-field">
+                            <label class="tjobs-metabox-label"><?php esc_html_e( 'Otsikko', 'tapojarvijobs' ); ?></label>
+                            <input type="text" name="tjobs_info_sections[<?php echo $index; ?>][title]" value="<?php echo esc_attr( $s_title ); ?>" class="tjobs-metabox-input" />
+                        </div>
+                    </div>
+                    <div class="tjobs-metabox-field">
+                        <label class="tjobs-metabox-label"><?php esc_html_e( 'Sisältö', 'tapojarvijobs' ); ?></label>
+                        <textarea name="tjobs_info_sections[<?php echo $index; ?>][content]" rows="5" class="tjobs-metabox-textarea"><?php echo esc_textarea( $s_content ); ?></textarea>
+                    </div>
+                </div>
+                <?php
+            }
+            ?>
+        </div>
+
+        <button type="button" id="tjobs-add-section" class="tjobs-metabox-btn tjobs-metabox-btn-add">
+            <span class="dashicons dashicons-plus-alt2"></span>
+            <?php esc_html_e( 'Lisää osio', 'tapojarvijobs' ); ?>
+        </button>
+
+    </div><!-- /tab sections -->
+
+    <!-- ── TAB 3: Media ──────────────────────────────────────────────────── -->
     <div class="tjobs-admin-tab-content" data-tab-content="media">
 
         <div class="tjobs-metabox-field">
@@ -330,6 +389,50 @@ jQuery(document).ready(function($) {
 
     $(document).on('click', '.tjobs-remove-highlight', function() {
         $(this).closest('.tjobs-list-row').remove();
+    });
+
+    // ── Info Sections ─────────────────────────────────────────────────────────
+    var sectionIndex = <?php echo count( $sections ); ?>;
+
+    function tjobsBuildSectionRow(index, icon, title) {
+        var escapedIcon  = $('<div>').text(icon).html();
+        var escapedTitle = $('<div>').text(title).html();
+        return '<div class="tjobs-section-row">' +
+            '<div class="tjobs-section-header">' +
+            '<strong><?php echo esc_js( __( 'Osio #', 'tapojarvijobs' ) ); ?>' + (index + 1) + '</strong>' +
+            '<button type="button" class="tjobs-metabox-btn tjobs-metabox-btn-remove tjobs-remove-section" aria-label="<?php echo esc_js( __( 'Poista', 'tapojarvijobs' ) ); ?>"><span class="dashicons dashicons-trash"></span></button>' +
+            '</div>' +
+            '<div class="tjobs-metabox-grid tjobs-section-row__grid">' +
+            '<div class="tjobs-metabox-field">' +
+            '<label class="tjobs-metabox-label"><?php echo esc_js( __( 'Ikoni', 'tapojarvijobs' ) ); ?></label>' +
+            '<input type="text" name="tjobs_info_sections[' + index + '][icon]" value="' + escapedIcon + '" class="tjobs-metabox-input" placeholder="🏠" />' +
+            '</div>' +
+            '<div class="tjobs-metabox-field">' +
+            '<label class="tjobs-metabox-label"><?php echo esc_js( __( 'Otsikko', 'tapojarvijobs' ) ); ?></label>' +
+            '<input type="text" name="tjobs_info_sections[' + index + '][title]" value="' + escapedTitle + '" class="tjobs-metabox-input" />' +
+            '</div>' +
+            '</div>' +
+            '<div class="tjobs-metabox-field">' +
+            '<label class="tjobs-metabox-label"><?php echo esc_js( __( 'Sisältö', 'tapojarvijobs' ) ); ?></label>' +
+            '<textarea name="tjobs_info_sections[' + index + '][content]" rows="5" class="tjobs-metabox-textarea"></textarea>' +
+            '</div>' +
+            '</div>';
+    }
+
+    $('.tjobs-section-preset-btn').on('click', function() {
+        var icon  = $(this).data('icon');
+        var title = $(this).data('fi') || '';
+        $('#tjobs-sections-container').append(tjobsBuildSectionRow(sectionIndex, icon, title));
+        sectionIndex++;
+    });
+
+    $('#tjobs-add-section').on('click', function() {
+        $('#tjobs-sections-container').append(tjobsBuildSectionRow(sectionIndex, '', ''));
+        sectionIndex++;
+    });
+
+    $(document).on('click', '.tjobs-remove-section', function() {
+        $(this).closest('.tjobs-section-row').remove();
     });
 
     // ── Gallery ──────────────────────────────────────────────────────────────
@@ -654,6 +757,24 @@ if ( isset( $_POST['tjobs_info_questions'] ) && is_array( $_POST['tjobs_info_que
     update_post_meta( $post_id, '_tjobs_info_questions', $questions );
 } else {
     delete_post_meta( $post_id, '_tjobs_info_questions' );
+}
+
+// Tallenna tietosisältöosiot
+if ( isset( $_POST['tjobs_info_sections'] ) && is_array( $_POST['tjobs_info_sections'] ) ) {
+    $sections = array();
+    foreach ( $_POST['tjobs_info_sections'] as $s ) {
+        if ( empty( $s['title'] ) && empty( $s['content'] ) ) {
+            continue; // Ohita tyhjät osiot
+        }
+        $sections[] = array(
+            'icon'    => isset( $s['icon'] ) ? sanitize_text_field( $s['icon'] ) : '',
+            'title'   => isset( $s['title'] ) ? sanitize_text_field( $s['title'] ) : '',
+            'content' => isset( $s['content'] ) ? sanitize_textarea_field( $s['content'] ) : '',
+        );
+    }
+    update_post_meta( $post_id, '_tjobs_info_sections', $sections );
+} else {
+    delete_post_meta( $post_id, '_tjobs_info_sections' );
 }
 
 // Tallenna automaatiosäännöt

@@ -189,6 +189,7 @@ try {
                 $gallery    = get_post_meta( $pkg_id, '_tjobs_info_gallery', true );
                 $questions  = get_post_meta( $pkg_id, '_tjobs_info_questions', true );
                 $score_feedback_rules = get_post_meta( $pkg_id, '_tjobs_score_feedback_rules', true );
+                $sections_raw = get_post_meta( $pkg_id, '_tjobs_info_sections', true );
 
                 // Yhteyshenkilö
                 $contact_name  = get_post_meta( $pkg_id, '_tjobs_info_contact_name', true );
@@ -280,6 +281,26 @@ try {
                     }
                 }
 
+                // Tietosisältöosiot arrayksi
+                $sections_arr = array();
+                if ( ! empty( $sections_raw ) && is_array( $sections_raw ) ) {
+                    foreach ( $sections_raw as $section ) {
+                        if ( ! is_array( $section ) ) {
+                            continue;
+                        }
+                        $s_title   = isset( $section['title'] ) ? sanitize_text_field( $section['title'] ) : '';
+                        $s_content = isset( $section['content'] ) ? sanitize_textarea_field( $section['content'] ) : '';
+                        if ( empty( $s_title ) && empty( $s_content ) ) {
+                            continue;
+                        }
+                        $sections_arr[] = array(
+                            'icon'    => isset( $section['icon'] ) ? sanitize_text_field( $section['icon'] ) : '',
+                            'title'   => $s_title,
+                            'content' => $s_content,
+                        );
+                    }
+                }
+
                 // Saatavilla olevat kieliversiot
                 $available_langs   = function_exists( 'tjobs_get_available_languages' ) ? tjobs_get_available_languages() : array( 'fi', 'en', 'sv', 'it' );
                 $lang_availability = array();
@@ -301,6 +322,7 @@ try {
                     'gallery'             => $gallery_arr,
                     'questions'           => $sanitized_questions,
                     'score_feedback_rules' => $sanitized_score_rules,
+                    'sections'            => $sections_arr,
                     'contact'             => array(
                         'name'  => sanitize_text_field( (string) $contact_name ),
                         'email' => sanitize_email( (string) $contact_email ),
