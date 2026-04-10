@@ -186,7 +186,7 @@
             renderJobInfoInner(data, content);
         } catch (error) {
             console.error('TJobs modal: renderJobInfo failed', error);
-            var applyLink = data && data.apply_url
+            const applyLink = data && data.apply_url
                 ? '<a href="' + escapeHtml(data.apply_url) + '" target="_blank" rel="noopener" class="tjobs-cta-button">' + (i18n['modal.cta_apply'] || 'Siirry hakemaan →') + '</a>'
                 : '';
             content.innerHTML =
@@ -195,7 +195,7 @@
                 '<p>' + (i18n['modal.load_error'] || 'Tietojen lataaminen epäonnistui.') + '</p>' +
                 applyLink +
                 '</div>';
-            var closeBtn = content.querySelector('.tjobs-modal__close');
+            const closeBtn = content.querySelector('.tjobs-modal__close');
             if (closeBtn) { closeBtn.addEventListener('click', closeModal); }
         }
     }
