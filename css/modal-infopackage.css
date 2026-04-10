@@ -148,8 +148,10 @@
 }
 
 .tjobs-tab-btn.is-active {
-    color: #FEE000 !important;
-    border-bottom-color: #FEE000;
+    background: #000000;
+    color: #FEE000;
+    border-bottom-color: #000000;
+    border-radius: 6px 6px 0 0;
 }
 
 /* === Tab Content === */
