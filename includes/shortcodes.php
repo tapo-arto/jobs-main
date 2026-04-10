@@ -435,11 +435,19 @@ foreach ($countries as $code => $country_data) {
             $output .= '</div>'; // tjobs-job-card__content
 
             if (!empty($apply_url)) {
-                // Nappi avaa aina modal-infopaneelin; data haetaan dynaamisesti REST API:sta
+                $infopackage_id = function_exists('tjobs_resolve_infopackage') ? tjobs_resolve_infopackage($post_id, $lang_code) : null;
                 $output .= '<div class="tjobs-job-card__action">';
-                $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
-                $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                $output .= '</button>';
+                if ($infopackage_id) {
+                    // Job has an infopackage: button opens modal
+                    $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
+                    $output .= '</button>';
+                } else {
+                    // No infopackage: direct link to application form
+                    $output .= '<a href="' . esc_url($apply_url) . '" target="_blank" rel="noopener" class="tjobs-job-card__apply-btn" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
+                    $output .= '</a>';
+                }
                 $output .= '</div>';
             }
 
