@@ -298,7 +298,7 @@
 }
 
 .tjobs-job-card__apply-btn:hover {
-    background: var(--tjobs-btn-hover-bg);
+    background: var(--tjobs-btn-hover-bg) !important;
     transform: scale(1.03);
     color: var(--tjobs-btn-hover-text) !important;
     text-decoration: none !important;
