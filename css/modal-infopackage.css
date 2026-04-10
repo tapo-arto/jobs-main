@@ -839,3 +839,30 @@
         transform: translateY(0);
     }
 }
+
+/* === Individual Feedback Summary (shown after all questions answered) === */
+.tjobs-feedback-summary {
+    margin-top: 16px;
+    padding: 16px;
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    animation: tjobsFeedbackFadeIn 0.3s ease-out;
+}
+
+.tjobs-feedback-list {
+    margin: 0;
+    padding: 0 0 0 1.2em;
+    list-style: disc;
+}
+
+.tjobs-feedback-list li {
+    color: #78350f;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 6px;
+}
+
+.tjobs-feedback-list li:last-child {
+    margin-bottom: 0;
+}
