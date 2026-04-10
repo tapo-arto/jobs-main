@@ -182,6 +182,25 @@
         const content = modalElement.querySelector('.tjobs-modal__content');
         if (!content) return;
 
+        try {
+            renderJobInfoInner(data, content);
+        } catch (error) {
+            console.error('TJobs modal: renderJobInfo failed', error);
+            const applyLink = data && data.apply_url
+                ? '<a href="' + escapeHtml(data.apply_url) + '" target="_blank" rel="noopener" class="tjobs-cta-button">' + (i18n['modal.cta_apply'] || 'Siirry hakemaan →') + '</a>'
+                : '';
+            content.innerHTML =
+                '<div class="tjobs-modal__error">' +
+                '<button type="button" class="tjobs-modal__close" aria-label="Close">&times;</button>' +
+                '<p>' + (i18n['modal.load_error'] || 'Tietojen lataaminen epäonnistui.') + '</p>' +
+                applyLink +
+                '</div>';
+            const closeBtn = content.querySelector('.tjobs-modal__close');
+            if (closeBtn) { closeBtn.addEventListener('click', closeModal); }
+        }
+    }
+
+    function renderJobInfoInner(data, content) {
         const pkg = data.infopackage;
         const hasMedia = pkg && ((pkg.video_url && pkg.video_url.trim()) || (pkg.gallery && pkg.gallery.length > 0));
         const hasQuestions = pkg && pkg.questions && pkg.questions.length > 0;
