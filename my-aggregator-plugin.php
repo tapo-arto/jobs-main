@@ -169,6 +169,11 @@ function tjobs_prevent_heavy_shortcodes_in_builder( $return, $tag, $atts, $m ) {
     $key     = tjobs_jobs_cache_key( $tag, (array) $atts );
     $cached  = get_transient( $key );
     if ( false !== $cached ) {
+        // Vaikka HTML tulee välimuistista, modal-assettit (JS+CSS) pitää silti ladata,
+        // jotta frontend-modal.js on käytettävissä ja data-job-id -klikkaukset toimivat.
+        if ( function_exists( 'tjobs_enqueue_modal_assets' ) ) {
+            tjobs_enqueue_modal_assets();
+        }
         return $cached; // Palauta suoraan välimuistista
     }
 
