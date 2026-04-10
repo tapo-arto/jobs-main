@@ -401,6 +401,7 @@ pre {
 .tjobs-admin-tab-content.is-active { display: block; }
 
 /* ── Score rule rows ── */
+.tjobs-metabox-section-title--spaced { margin-top: 28px; }
 .tjobs-score-rule-row {
     align-items: flex-start !important;
     gap: 8px;

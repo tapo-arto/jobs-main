@@ -230,7 +230,7 @@ if ( ! is_array( $score_feedback_rules ) ) { $score_feedback_rules = array(); }
         </button>
 
         <!-- Score-based feedback rules -->
-        <div class="tjobs-metabox-section-title" style="margin-top:28px;">
+        <div class="tjobs-metabox-section-title tjobs-metabox-section-title--spaced">
             <?php esc_html_e( 'Pistemäinen yleispalaute', 'tapojarvijobs' ); ?>
             <span class="tjobs-metabox-desc"><?php esc_html_e( 'Valinnainen. Näytetään kaikkien kysymysten jälkeen. Säännöt arvioidaan suurimmasta pienimpään.', 'tapojarvijobs' ); ?></span>
         </div>

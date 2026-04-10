@@ -813,10 +813,9 @@
         
         const selectedValueLower = String(selectedValue || '').toLowerCase();
         
-        if (unsuitableValues.includes(selectedValueLower)) {
-            // Inline feedback intentionally hidden; collected and shown as summary in checkOverallResult
-            // feedbackDiv.style.display = 'block';
-        } else {
+        // Inline feedback is intentionally never shown; unsuitable answers are
+        // collected and displayed as a summary in checkOverallResult instead.
+        if (!unsuitableValues.includes(selectedValueLower)) {
             feedbackDiv.style.display = 'none';
         }
     }
