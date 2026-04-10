@@ -268,7 +268,8 @@
         const pkg = data.infopackage;
         const hasMedia = pkg && ((pkg.video_url && pkg.video_url.trim()) || (pkg.gallery && pkg.gallery.length > 0));
         const hasQuestions = pkg && pkg.questions && pkg.questions.length > 0;
-        const showTabs = hasMedia || hasQuestions;
+        const hasSections = pkg && pkg.sections && pkg.sections.length > 0;
+        const showTabs = hasMedia || hasQuestions || hasSections;
 
         let html = '';
 
@@ -308,6 +309,9 @@
             html += `<button type="button" class="tjobs-tab-btn is-active" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
             if (hasMedia) {
                 html += `<button type="button" class="tjobs-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Media'}</button>`;
+            }
+            if (hasSections) {
+                html += `<button type="button" class="tjobs-tab-btn" data-tab="details">${i18n['tab.details'] || 'Lisätiedot'}</button>`;
             }
             if (hasQuestions) {
                 html += `<button type="button" class="tjobs-tab-btn" data-tab="questions">${i18n['tab.questions'] || 'Kysymykset'}</button>`;
@@ -383,6 +387,29 @@
                 html += '</div>';
             }
 
+            html += '</div>';
+        }
+
+        // Tab-sisältö: Lisätiedot
+        if (hasSections) {
+            html += '<div class="tjobs-tab-content" data-tab-content="details" style="display:none;">';
+            pkg.sections.forEach(section => {
+                html += '<div class="tjobs-modal__info-section">';
+                if (section.icon || section.title) {
+                    html += '<h3 class="tjobs-modal__info-section-heading">';
+                    if (section.icon) {
+                        html += '<span class="tjobs-modal__info-section-icon">' + escapeHtml(section.icon) + '</span>';
+                    }
+                    if (section.title) {
+                        html += '<span>' + escapeHtml(section.title) + '</span>';
+                    }
+                    html += '</h3>';
+                }
+                if (section.content) {
+                    html += '<div class="tjobs-modal__info-section-content">' + escapeHtml(section.content) + '</div>';
+                }
+                html += '</div>';
+            });
             html += '</div>';
         }
 

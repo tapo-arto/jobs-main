@@ -910,3 +910,38 @@
 .tjobs-feedback-list li:last-child {
     margin-bottom: 0;
 }
+
+/* === Info Sections (Lisätiedot tab) === */
+.tjobs-modal__info-section {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.tjobs-modal__info-section:last-child {
+    margin-bottom: 0;
+}
+
+.tjobs-modal__info-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 12px 0;
+}
+
+.tjobs-modal__info-section-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.tjobs-modal__info-section-content {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #374151;
+    white-space: pre-wrap;
+}

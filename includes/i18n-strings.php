@@ -73,6 +73,12 @@ return array(
         'sv' => 'Frågor',
         'it' => 'Domande',
     ),
+    'tab.details' => array(
+        'fi' => 'Lisätiedot',
+        'en' => 'Details',
+        'sv' => 'Detaljer',
+        'it' => 'Dettagli',
+    ),
 
     // Question feedback
     'feedback.unsuitable_default' => array(

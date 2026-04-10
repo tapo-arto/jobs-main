@@ -426,3 +426,60 @@ pre {
     flex: 1;
     min-height: 54px;
 }
+
+/* ── Info Section presets (quick-add pills) ── */
+.tjobs-section-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.tjobs-section-preset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1.5px solid #e2e8f0;
+    background: #fff;
+    color: #374151;
+    transition: background .15s, border-color .15s, transform .1s;
+}
+
+.tjobs-section-preset-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.tjobs-section-preset-btn:active {
+    transform: scale(.97);
+}
+
+/* ── Info Section rows (consistent with question rows) ── */
+.tjobs-section-row {
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    background: #f8fafc;
+}
+
+.tjobs-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.tjobs-section-row__grid {
+    grid-template-columns: 80px 1fr;
+}
