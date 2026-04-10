@@ -349,37 +349,52 @@
         }
 
         // Yes/No pill buttons
+        const scoreFeedbackRules = data.infopackage && data.infopackage.score_feedback_rules
+            ? data.infopackage.score_feedback_rules.slice().sort(function(a, b) { return b.min_errors - a.min_errors; })
+            : [];
+
         const pillButtons = content.querySelectorAll('.tjobs-pill-button');
         pillButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
                 const siblings = this.parentElement.querySelectorAll('.tjobs-pill-button');
                 siblings.forEach(s => s.classList.remove('is-selected'));
                 this.classList.add('is-selected');
-                
+
+                // Preserve current tab active state
+                const tabBtns = content.querySelectorAll('.tjobs-tab-btn');
+                tabBtns.forEach(function(tb) {
+                    if (tb.getAttribute('data-tab') === currentTab) {
+                        tb.classList.add('is-active');
+                    }
+                });
+
                 // Tarkista palaute
                 const questionDiv = this.closest('.tjobs-question');
                 checkUnsuitableFeedback(questionDiv, this.getAttribute('data-value'));
-                checkOverallResult(content);
+                checkOverallResult(content, scoreFeedbackRules);
             });
         });
 
         // Scale radio buttons
         const scaleInputs = content.querySelectorAll('.tjobs-question__scale input[type="radio"]');
         scaleInputs.forEach(input => {
-            input.addEventListener('change', function() {
+            input.addEventListener('change', function(e) {
+                e.stopPropagation();
                 const questionDiv = this.closest('.tjobs-question');
                 checkUnsuitableFeedback(questionDiv, this.value);
-                checkOverallResult(content);
+                checkOverallResult(content, scoreFeedbackRules);
             });
         });
 
         // Select dropdown
         const selectInputs = content.querySelectorAll('.tjobs-question__select');
         selectInputs.forEach(select => {
-            select.addEventListener('change', function() {
+            select.addEventListener('change', function(e) {
+                e.stopPropagation();
                 const questionDiv = this.closest('.tjobs-question');
                 checkUnsuitableFeedback(questionDiv, this.value);
-                checkOverallResult(content);
+                checkOverallResult(content, scoreFeedbackRules);
             });
         });
     }
@@ -611,13 +626,13 @@
     }
 
     /**
-     * Tarkista kokonaistulos (3/5 logiikka) ja näytä tulos-banneri.
-     * Laskee kuinka moni vastaus on "sopiva" (ei osunut epäsopivuusarvoon).
+     * Tarkista kokonaistulos ja näytä tulos-banneri + yksilöllinen palaute.
      * Banneri näytetään kun kaikki ei-info-kysymykset on vastattu.
      *
-     * @param {Element} contentEl - Modal content element
+     * @param {Element} contentEl          - Modal content element
+     * @param {Array}   scoreFeedbackRules - Array of {min_errors, message} objects
      */
-    function checkOverallResult(contentEl) {
+    function checkOverallResult(contentEl, scoreFeedbackRules) {
         if (!contentEl) return;
 
         var questionsContainer = contentEl.querySelector('.tjobs-modal__questions');
@@ -687,21 +702,67 @@
 
         if (totalAnswerable === 0) return;
 
-        // Remove existing result banner
+        // Remove existing banners
         var existingBanner = questionsContainer.querySelector('.tjobs-result-banner');
-        if (existingBanner) {
-            existingBanner.remove();
-        }
+        if (existingBanner) { existingBanner.remove(); }
+
+        var existingFeedbackSummary = questionsContainer.querySelector('.tjobs-feedback-summary');
+        if (existingFeedbackSummary) { existingFeedbackSummary.remove(); }
 
         // Only show result when all answerable questions have been answered
         if (totalAnswered < totalAnswerable) return;
 
-        // 3/5 threshold: at least 3 suitable answers required (hakeminen ei koskaan esty)
-        var THRESHOLD = 3;
-        var isGood = totalSuitable >= THRESHOLD;
+        var totalErrors = totalAnswerable - totalSuitable;
 
+        // Find matching score rule (highest min_errors that is <= totalErrors, already pre-sorted)
+        var matchedRule = null;
+        if (scoreFeedbackRules && scoreFeedbackRules.length > 0) {
+            for (var i = 0; i < scoreFeedbackRules.length; i++) {
+                if (totalErrors >= scoreFeedbackRules[i].min_errors) {
+                    matchedRule = scoreFeedbackRules[i];
+                    break;
+                }
+            }
+        }
+
+        // Collect individual feedback messages for unsuitable answers
+        var feedbackMessages = [];
+        questionDivs.forEach(function(qDiv) {
+            var feedbackDiv = qDiv.querySelector('.tjobs-question__feedback');
+            if (!feedbackDiv) return;
+            var unsuitableValuesAttr = feedbackDiv.getAttribute('data-unsuitable-values');
+            if (!unsuitableValuesAttr) return;
+
+            var selectedValue = null;
+            var selectedPill = qDiv.querySelector('.tjobs-pill-button.is-selected');
+            if (selectedPill) selectedValue = selectedPill.getAttribute('data-value');
+            var checkedRadio = qDiv.querySelector('input[type="radio"]:checked');
+            if (checkedRadio) selectedValue = checkedRadio.value;
+            var selectEl = qDiv.querySelector('.tjobs-question__select');
+            if (selectEl && selectEl.value) selectedValue = selectEl.value;
+
+            if (selectedValue === null || selectedValue === '') return;
+
+            var unsuitableValues = unsuitableValuesAttr.split(',').map(function(v) { return v.trim().toLowerCase(); });
+            if (unsuitableValues.includes(String(selectedValue).toLowerCase())) {
+                var feedbackTextEl = feedbackDiv.querySelector('.tjobs-feedback-text p');
+                if (feedbackTextEl && feedbackTextEl.textContent.trim()) {
+                    feedbackMessages.push(feedbackTextEl.textContent.trim());
+                }
+            }
+        });
+
+        // Build and append result banner
         var banner = document.createElement('div');
-        if (isGood) {
+        if (matchedRule) {
+            banner.className = 'tjobs-result-banner tjobs-result-banner--guidance';
+            banner.innerHTML =
+                '<span class="tjobs-result-banner__icon">&#x1F4A1;</span>' +
+                '<div class="tjobs-result-banner__body">' +
+                    '<p class="tjobs-result-banner__heading">' + escapeHtml(i18n['result.guidance_heading'] || 'Huomioi tehtävän vaatimukset') + '</p>' +
+                    '<p class="tjobs-result-banner__text">' + escapeHtml(matchedRule.message) + '</p>' +
+                '</div>';
+        } else if (totalErrors === 0) {
             banner.className = 'tjobs-result-banner tjobs-result-banner--good';
             banner.innerHTML =
                 '<span class="tjobs-result-banner__icon">✅</span>' +
@@ -720,10 +781,23 @@
         }
 
         questionsContainer.appendChild(banner);
+
+        // Show individual feedback messages if any
+        if (feedbackMessages.length > 0) {
+            var feedbackSummary = document.createElement('div');
+            feedbackSummary.className = 'tjobs-feedback-summary';
+            var feedbackHtml = '<ul class="tjobs-feedback-list">';
+            feedbackMessages.forEach(function(msg) {
+                feedbackHtml += '<li>' + escapeHtml(msg) + '</li>';
+            });
+            feedbackHtml += '</ul>';
+            feedbackSummary.innerHTML = feedbackHtml;
+            questionsContainer.appendChild(feedbackSummary);
+        }
     }
 
     /**
-     * Tarkista epäsopiva palaute ja näytä banneri tarvittaessa
+     * Tarkista epäsopiva palaute – ei näytä inlinena, kerätään yhteenvetoon checkOverallResult:ssa
      */
     function checkUnsuitableFeedback(questionDiv, selectedValue) {
         if (!questionDiv) return;
@@ -740,7 +814,8 @@
         const selectedValueLower = String(selectedValue || '').toLowerCase();
         
         if (unsuitableValues.includes(selectedValueLower)) {
-            feedbackDiv.style.display = 'block';
+            // Inline feedback intentionally hidden; collected and shown as summary in checkOverallResult
+            // feedbackDiv.style.display = 'block';
         } else {
             feedbackDiv.style.display = 'none';
         }

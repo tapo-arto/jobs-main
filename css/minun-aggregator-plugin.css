@@ -275,26 +275,26 @@
 }
 
 .tjobs-job-card__apply-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.6rem 1.2rem;
-    background: var(--tjobs-btn-bg);
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.4rem !important;
+    padding: 0.6rem 1.2rem !important;
+    background: var(--tjobs-btn-bg) !important;
     color: var(--tjobs-btn-text) !important;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    font-family: inherit;
-    line-height: inherit;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    font-family: inherit !important;
+    line-height: 1 !important;
     text-decoration: none !important;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
-    white-space: nowrap;
-    cursor: pointer;
-    box-sizing: border-box;
-    appearance: none;
-    -webkit-appearance: none;
-    vertical-align: middle;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    vertical-align: middle !important;
 }
 
 .tjobs-job-card__apply-btn:hover {

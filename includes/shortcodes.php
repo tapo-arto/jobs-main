@@ -429,7 +429,7 @@ foreach ($countries as $code => $country_data) {
                 $output .= '<div class="tjobs-job-card__action">';
                 if ( $has_infopackage ) {
                     // Nappi avaa infopaketti-modalin
-                    $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                    $output .= '<button type="button" class="tjobs-job-card__apply-btn tjobs-apply-btn-action" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
                     $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
                     $output .= '</button>';
                 } else {
