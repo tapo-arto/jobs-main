@@ -370,7 +370,6 @@ foreach ($countries as $code => $country_data) {
     $output .= '<span class="tjobs-country-flag"><img src="' . esc_url($flag) . '" alt="' . esc_attr($country_name) . '" class="tjobs-country-flag__img"></span>';
     $output .= '<span class="tjobs-country-name">' . esc_html($country_name) . '</span>';
     $output .= '</h2>';
-    $output .= '<span class="tjobs-country-count">' . esc_html($job_count . ' ' . $t['open_positions']) . '</span>';
     $output .= '</div>';
 
     $output .= '<div class="tjobs-jobs-grid">';
