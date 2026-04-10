@@ -387,12 +387,7 @@
                 this.classList.add('is-selected');
 
                 // Preserve current tab active state
-                const tabBtns = content.querySelectorAll('.tjobs-tab-btn');
-                tabBtns.forEach(function(tb) {
-                    if (tb.getAttribute('data-tab') === currentTab) {
-                        tb.classList.add('is-active');
-                    }
-                });
+                switchTab(currentTab);
 
                 checkOverallResult(content, scoreFeedbackRules);
             });

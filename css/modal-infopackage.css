@@ -13,12 +13,14 @@
     align-items: stretch;
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .tjobs-modal-overlay.is-open {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
 /* === Modal Panel === */
@@ -130,7 +132,7 @@
 .tjobs-tab-btn {
     padding: 12px 20px;
     border: none;
-    background: transparent;
+    background: #ffffff;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
@@ -147,7 +149,8 @@
     background: rgba(0, 0, 0, 0.04);
 }
 
-.tjobs-tab-btn.is-active {
+.tjobs-tab-btn.is-active,
+.tjobs-modal__tabs .tjobs-tab-btn.is-active {
     background: #000000;
     color: #FEE000;
     border-bottom-color: #000000;
