@@ -6,6 +6,13 @@
 (function() {
     'use strict';
 
+    // Estä tuplarekisteröinnit: skripti ajetaan vain kerran per sivulataus,
+    // vaikka se löytyisi sivulta useaan kertaan tai jokin plugin käynnistäisi sen uudelleen.
+    if (window.TJobsModalInitialized) {
+        return;
+    }
+    window.TJobsModalInitialized = true;
+
     let currentJobId = null;
     let currentLang = null;
     let modalElement = null;
@@ -13,6 +20,16 @@
     let i18n = {};
     let currentTab = 'general';
     let closeTimer = null;
+
+    /**
+     * Tarkista onko elementti yhä liitetty dokumenttiin (ei stale/detached viite).
+     *
+     * @param {Element|null} el - Tarkistettava DOM-elementti.
+     * @returns {boolean} true jos elementti on liitetty dokumenttiin, muuten false.
+     */
+    function isInDocument(el) {
+        return el && document.body && document.body.contains(el);
+    }
 
     /**
      * Alusta modal
@@ -41,18 +58,34 @@
             }
         });
 
-        // Käsittele bfcache-palautus: varmista modal on suljettu
+        // Käsittele bfcache-palautus: varmista modal on suljettu ja tila on puhdas.
         window.addEventListener('pageshow', function(e) {
-            if (e.persisted && modalElement) {
+            if (e.persisted) {
+                // Nollaa aina body overflow riippumatta modal-tilasta
+                document.body.style.overflow = '';
+
+                // Peruuta mahdollinen odottava sulkemis-timeout
                 if (closeTimer) {
                     clearTimeout(closeTimer);
                     closeTimer = null;
                 }
-                modalElement.classList.remove('is-open');
-                document.body.style.overflow = '';
-                const content = modalElement.querySelector('.tjobs-modal__content');
-                if (content) {
-                    content.innerHTML = '';
+
+                // Jos modalElement on stale viite (ei enää DOM:ssa), nollaa se
+                if (modalElement && !isInDocument(modalElement)) {
+                    modalElement = null;
+                }
+
+                if (modalElement) {
+                    modalElement.classList.remove('is-open');
+                    const content = modalElement.querySelector('.tjobs-modal__content');
+                    if (content) {
+                        content.innerHTML = '';
+                    }
+                }
+
+                // Lightbox myös kiinni
+                if (lightboxElement && !isInDocument(lightboxElement)) {
+                    lightboxElement = null;
                 }
             }
         });
@@ -70,6 +103,11 @@
         if (closeTimer) {
             clearTimeout(closeTimer);
             closeTimer = null;
+        }
+
+        // Tarkista onko modalElement yhä DOM:ssa (esim. bfcache tai ulkoinen manipulaatio saattaa irrottaa sen)
+        if (modalElement && !isInDocument(modalElement)) {
+            modalElement = null;
         }
 
         // Luo modal DOM jos ei ole vielä
@@ -97,6 +135,7 @@
         // Odota transition ennen sisällön tyhjennystä
         closeTimer = setTimeout(function() {
             closeTimer = null;
+            if (!modalElement) return;
             const content = modalElement.querySelector('.tjobs-modal__content');
             if (content) {
                 content.innerHTML = '';
@@ -154,12 +193,18 @@
                 return response.json();
             })
             .then(data => {
+                // Varmista modal on yhä olemassa ja DOM:ssa ennen renderöintiä
+                if (!modalElement || !isInDocument(modalElement)) return;
                 i18n = data.i18n || i18n;
                 renderJobInfo(data);
             })
             .catch(error => {
-                console.error('Error loading job info:', error);
-                content.innerHTML = `
+                console.error('TJobs modal: Error loading job info:', error);
+                // Varmista modal on yhä olemassa ennen virheviestinäyttöä
+                if (!modalElement || !isInDocument(modalElement)) return;
+                const errorContent = modalElement.querySelector('.tjobs-modal__content');
+                if (!errorContent) return;
+                errorContent.innerHTML = `
                     <div class="tjobs-modal__error">
                         <p>${i18n['modal.load_error'] || 'Tietojen lataaminen epäonnistui.'}</p>
                         <button type="button" class="tjobs-modal__retry">
@@ -168,7 +213,7 @@
                     </div>
                 `;
                 
-                const retryBtn = content.querySelector('.tjobs-modal__retry');
+                const retryBtn = errorContent.querySelector('.tjobs-modal__retry');
                 if (retryBtn) {
                     retryBtn.addEventListener('click', closeModal);
                 }
@@ -848,5 +893,18 @@
     } else {
         init();
     }
+
+    /**
+     * Julkinen nimiavaruus lisäosan eristämiseksi.
+     * Muut skriptit voivat käyttää näitä metodeja tai tarkistaa
+     * window.TJobsModalInitialized ennen omien toimiensa aloittamista.
+     *
+     * @namespace window.TJobsModal
+     * @property {Function} openModal  - Avaa modal annetulla työpaikka-ID:llä ja kielellä.
+     * @property {Function} closeModal - Sulkee avoinna olevan modalin.
+     */
+    window.TJobsModal = window.TJobsModal || {};
+    window.TJobsModal.openModal = openModal;
+    window.TJobsModal.closeModal = closeModal;
 
 })();
