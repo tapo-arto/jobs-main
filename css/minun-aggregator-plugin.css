@@ -279,12 +279,16 @@
     padding: 0.6rem 1.2rem;
     background: var(--tjobs-btn-bg);
     color: var(--tjobs-btn-text) !important;
+    border: none;
     border-radius: 8px;
     font-size: 0.85rem;
     font-weight: 600;
+    font-family: inherit;
+    line-height: inherit;
     text-decoration: none !important;
     transition: background 0.2s ease, transform 0.15s ease;
     white-space: nowrap;
+    cursor: pointer;
 }
 
 .tjobs-job-card__apply-btn:hover {
