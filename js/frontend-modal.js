@@ -348,11 +348,12 @@
             });
         }
 
-        // Yes/No pill buttons
+        // Pre-sort score feedback rules once (highest min_errors first) for matching in checkOverallResult
         const scoreFeedbackRules = data.infopackage && data.infopackage.score_feedback_rules
             ? data.infopackage.score_feedback_rules.slice().sort(function(a, b) { return b.min_errors - a.min_errors; })
             : [];
 
+        // Yes/No pill buttons
         const pillButtons = content.querySelectorAll('.tjobs-pill-button');
         pillButtons.forEach(btn => {
             btn.addEventListener('click', function(e) {
@@ -369,9 +370,6 @@
                     }
                 });
 
-                // Tarkista palaute
-                const questionDiv = this.closest('.tjobs-question');
-                checkUnsuitableFeedback(questionDiv, this.getAttribute('data-value'));
                 checkOverallResult(content, scoreFeedbackRules);
             });
         });
@@ -381,8 +379,6 @@
         scaleInputs.forEach(input => {
             input.addEventListener('change', function(e) {
                 e.stopPropagation();
-                const questionDiv = this.closest('.tjobs-question');
-                checkUnsuitableFeedback(questionDiv, this.value);
                 checkOverallResult(content, scoreFeedbackRules);
             });
         });
@@ -392,8 +388,6 @@
         selectInputs.forEach(select => {
             select.addEventListener('change', function(e) {
                 e.stopPropagation();
-                const questionDiv = this.closest('.tjobs-question');
-                checkUnsuitableFeedback(questionDiv, this.value);
                 checkOverallResult(content, scoreFeedbackRules);
             });
         });
@@ -793,30 +787,6 @@
             feedbackHtml += '</ul>';
             feedbackSummary.innerHTML = feedbackHtml;
             questionsContainer.appendChild(feedbackSummary);
-        }
-    }
-
-    /**
-     * Tarkista epäsopiva palaute – ei näytä inlinena, kerätään yhteenvetoon checkOverallResult:ssa
-     */
-    function checkUnsuitableFeedback(questionDiv, selectedValue) {
-        if (!questionDiv) return;
-        const feedbackDiv = questionDiv.querySelector('.tjobs-question__feedback');
-        if (!feedbackDiv) return;
-        
-        const unsuitableValuesAttr = feedbackDiv.getAttribute('data-unsuitable-values');
-        if (!unsuitableValuesAttr) return;
-        
-        const unsuitableValues = unsuitableValuesAttr
-            .split(',')
-            .map(v => v.trim().toLowerCase());
-        
-        const selectedValueLower = String(selectedValue || '').toLowerCase();
-        
-        // Inline feedback is intentionally never shown; unsuitable answers are
-        // collected and displayed as a summary in checkOverallResult instead.
-        if (!unsuitableValues.includes(selectedValueLower)) {
-            feedbackDiv.style.display = 'none';
         }
     }
 
