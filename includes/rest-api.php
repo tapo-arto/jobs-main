@@ -188,6 +188,7 @@ try {
                 $video_url  = get_post_meta( $pkg_id, '_tjobs_info_video_url', true );
                 $gallery    = get_post_meta( $pkg_id, '_tjobs_info_gallery', true );
                 $questions  = get_post_meta( $pkg_id, '_tjobs_info_questions', true );
+                $score_feedback_rules = get_post_meta( $pkg_id, '_tjobs_score_feedback_rules', true );
 
                 // Yhteyshenkilö
                 $contact_name  = get_post_meta( $pkg_id, '_tjobs_info_contact_name', true );
@@ -265,6 +266,20 @@ try {
                     );
                 }
 
+                // Sanitoi score-based feedback rules
+                $sanitized_score_rules = array();
+                if ( ! empty( $score_feedback_rules ) && is_array( $score_feedback_rules ) ) {
+                    foreach ( $score_feedback_rules as $rule ) {
+                        if ( ! is_array( $rule ) ) {
+                            continue;
+                        }
+                        $sanitized_score_rules[] = array(
+                            'min_errors' => isset( $rule['min_errors'] ) ? absint( $rule['min_errors'] ) : 0,
+                            'message'    => isset( $rule['message'] ) ? sanitize_textarea_field( $rule['message'] ) : '',
+                        );
+                    }
+                }
+
                 // Saatavilla olevat kieliversiot
                 $available_langs   = function_exists( 'tjobs_get_available_languages' ) ? tjobs_get_available_languages() : array( 'fi', 'en', 'sv', 'it' );
                 $lang_availability = array();
@@ -285,6 +300,7 @@ try {
                     'video_url'           => esc_url_raw( (string) $video_url ),
                     'gallery'             => $gallery_arr,
                     'questions'           => $sanitized_questions,
+                    'score_feedback_rules' => $sanitized_score_rules,
                     'contact'             => array(
                         'name'  => sanitize_text_field( (string) $contact_name ),
                         'email' => sanitize_email( (string) $contact_email ),
