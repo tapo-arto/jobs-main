@@ -340,13 +340,18 @@ $args = shortcode_atts(array(
 $theme_class = ($args['theme'] === 'light') ? 'tjobs-theme-light' : 'tjobs-theme-dark';
 $output = '<div class="tjobs-jobs-by-country ' . esc_attr($theme_class) . '">';
 
-// Auto-synkronointi: jos ei ole yhtään julkaistua työpaikkaa, haetaan data automaattisesti
-$total_jobs_count = wp_count_posts( 'tjobs_tyopaikat' );
-$total_published  = isset( $total_jobs_count->publish ) ? (int) $total_jobs_count->publish : 0;
-if ( $total_published === 0 ) {
-    $last_sync = (int) get_option( 'tjobs_last_sync', 0 );
-    if ( ( time() - $last_sync ) > 5 * MINUTE_IN_SECONDS ) {
-        tjobs_sync_feed();
+// Auto-synkronointi: jos ei ole yhtään julkaistua työpaikkaa, haetaan data automaattisesti.
+// Käytetään staattista muuttujaa, jotta tarkistus tehdään korkeintaan kerran per sivulataus.
+static $tjobs_auto_sync_done = false;
+if ( ! $tjobs_auto_sync_done ) {
+    $tjobs_auto_sync_done = true;
+    $total_jobs_count = wp_count_posts( 'tjobs_tyopaikat' );
+    $total_published  = isset( $total_jobs_count->publish ) ? (int) $total_jobs_count->publish : 0;
+    if ( $total_published === 0 ) {
+        $last_sync = (int) get_option( 'tjobs_last_sync', 0 );
+        if ( ( time() - $last_sync ) > 5 * MINUTE_IN_SECONDS ) {
+            tjobs_sync_feed();
+        }
     }
 }
 
