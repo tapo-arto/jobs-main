@@ -247,6 +247,45 @@ pre {
     color: #92400e;
 }
 
+/* ── Yes/No unsuitable value picker ─────────────────────────────────────────── */
+.tjobs-unsuitable-yesno-options {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.tjobs-yesno-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    background: #fff;
+    transition: border-color .15s, background .15s, color .15s;
+    user-select: none;
+}
+
+.tjobs-yesno-option input[type="radio"] {
+    display: none;
+}
+
+.tjobs-yesno-option:hover {
+    border-color: #1a1a1a;
+    background: #f3f4f6;
+}
+
+.tjobs-yesno-option.is-selected {
+    border-color: #1a1a1a;
+    background: #1a1a1a;
+    color: #FEE000;
+}
+
 /* ── Toggle switch ───────────────────────────────────────────────────────────── */
 .tjobs-toggle-label {
     display: inline-flex;

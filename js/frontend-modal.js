@@ -200,7 +200,7 @@
             html += '<div class="tjobs-modal__tabs">';
             html += `<button type="button" class="tjobs-tab-btn is-active" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
             if (hasMedia) {
-                html += `<button type="button" class="tjobs-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Videot'}</button>`;
+                html += `<button type="button" class="tjobs-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Media'}</button>`;
             }
             if (hasQuestions) {
                 html += `<button type="button" class="tjobs-tab-btn" data-tab="questions">${i18n['tab.questions'] || 'Kysymykset'}</button>`;

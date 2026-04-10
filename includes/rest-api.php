@@ -43,7 +43,9 @@ register_rest_route( 'tjobs/v1', '/job-info/(?P<id>\d+)', array(
     'permission_callback' => '__return_true',
     'args'                => array(
         'id'   => array(
-            'validate_callback' => 'is_numeric',
+            'validate_callback' => function( $param ) {
+                return is_numeric( $param );
+            },
             'sanitize_callback' => 'absint',
         ),
         'lang' => array(

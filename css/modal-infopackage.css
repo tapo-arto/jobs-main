@@ -89,9 +89,9 @@
 }
 
 .tjobs-lang-btn.is-active {
-    background: #3b82f6;
-    color: #fff;
-    border-color: #3b82f6;
+    background: #000000;
+    color: #FEE000;
+    border-color: #000000;
 }
 
 .tjobs-lang-btn:hover:not(.is-active) {
@@ -143,12 +143,13 @@
 }
 
 .tjobs-tab-btn:hover {
-    color: #3b82f6;
+    color: #000000;
+    background: rgba(0, 0, 0, 0.04);
 }
 
 .tjobs-tab-btn.is-active {
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
+    color: #000000;
+    border-bottom-color: #FEE000;
 }
 
 /* === Tab Content === */
@@ -178,18 +179,18 @@
 .tjobs-highlight-pill {
     display: inline-block;
     padding: 10px 18px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: #ffffff;
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+    color: #FEE000;
     border-radius: 24px;
     font-size: 14px;
     font-weight: 500;
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
     transition: transform 0.2s;
 }
 
 .tjobs-highlight-pill:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 /* === Intro Text === */
@@ -225,13 +226,13 @@
 }
 
 .tjobs-modal__contact a {
-    color: #3b82f6;
+    color: #000000;
     text-decoration: none;
     transition: color 0.2s;
 }
 
 .tjobs-modal__contact a:hover {
-    color: #2563eb;
+    color: #333333;
     text-decoration: underline;
 }
 
@@ -416,8 +417,8 @@
 
 .tjobs-question__textarea:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #000000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
 }
 
 .tjobs-question__input,
@@ -434,8 +435,8 @@
 .tjobs-question__input:focus,
 .tjobs-question__select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #000000;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08);
 }
 
 /* === Yes/No Pills === */
@@ -458,14 +459,14 @@
 }
 
 .tjobs-pill-button:hover {
-    border-color: #3b82f6;
-    background: #eff6ff;
+    border-color: #000000;
+    background: #f3f4f6;
 }
 
 .tjobs-pill-button.is-selected {
-    border-color: #3b82f6;
-    background: #3b82f6;
-    color: #ffffff;
+    border-color: #000000;
+    background: #000000;
+    color: #FEE000;
 }
 
 /* === Scale === */
@@ -498,14 +499,14 @@
 }
 
 .tjobs-scale-option:hover span {
-    border-color: #3b82f6;
-    background: #eff6ff;
+    border-color: #000000;
+    background: #f3f4f6;
 }
 
 .tjobs-scale-option input[type="radio"]:checked + span {
-    border-color: #3b82f6;
-    background: #3b82f6;
-    color: #ffffff;
+    border-color: #000000;
+    background: #000000;
+    color: #FEE000;
 }
 
 /* === CTA Button === */
@@ -523,8 +524,8 @@
     justify-content: center;
     width: 100%;
     padding: 16px 24px;
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: #ffffff;
+    background: #FEE000;
+    color: #000000;
     text-align: center;
     font-size: 17px;
     font-weight: 600;
@@ -533,14 +534,15 @@
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 4px 12px rgba(254, 224, 0, 0.4);
     min-height: 56px;
 }
 
 .tjobs-cta-button:hover {
+    background: #000000;
+    color: #FEE000;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
-    color: #ffffff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
     text-decoration: none;
 }
 
@@ -561,7 +563,7 @@
     width: 48px;
     height: 48px;
     border: 4px solid #e5e7eb;
-    border-top-color: #3b82f6;
+    border-top-color: #000000;
     border-radius: 50%;
     animation: tjobs-spin 0.8s linear infinite;
 }
@@ -592,8 +594,8 @@
 
 .tjobs-modal__retry {
     padding: 12px 24px;
-    background: #3b82f6;
-    color: #ffffff;
+    background: #000000;
+    color: #FEE000;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -603,7 +605,7 @@
 }
 
 .tjobs-modal__retry:hover {
-    background: #2563eb;
+    background: #333333;
 }
 
 /* === Info Badge for Job List === */
@@ -611,9 +613,9 @@
     display: inline-block;
     margin-left: 8px;
     padding: 3px 10px;
-    background: #eff6ff;
-    color: #3b82f6;
-    border: 1px solid #3b82f6;
+    background: #FEE000;
+    color: #000000;
+    border: 1px solid #000000;
     border-radius: 14px;
     font-size: 11px;
     font-weight: 600;

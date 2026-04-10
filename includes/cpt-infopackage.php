@@ -370,15 +370,57 @@ jQuery(document).ready(function($) {
         $(this).closest('.tjobs-question-row').remove();
     });
 
-    // Toggle options field visibility
+    // Toggle options field visibility and unsuitable value UI on type change
     $(document).on('change', '.tjobs-question-type', function() {
         var $row = $(this).closest('.tjobs-question-row');
         var type = $(this).val();
+
+        // Show/hide select options textarea
         if (type === 'select') {
             $row.find('.tjobs-question-options-wrapper').show();
         } else {
             $row.find('.tjobs-question-options-wrapper').hide();
         }
+
+        // Toggle unsuitable value UI
+        if (type === 'yesno') {
+            var currentVal = $row.find('.tjobs-unsuitable-value-field').val();
+            $row.find('.tjobs-unsuitable-text-input').hide();
+            $row.find('.tjobs-unsuitable-yesno-picker').show();
+            // Sync current value to radio picker
+            var $radios = $row.find('.tjobs-unsuitable-yesno-radio');
+            $radios.prop('checked', false);
+            $row.find('.tjobs-yesno-option').removeClass('is-selected');
+            if (currentVal === 'yes' || currentVal === 'no') {
+                $radios.filter('[value="' + currentVal + '"]').prop('checked', true)
+                    .closest('.tjobs-yesno-option').addClass('is-selected');
+            } else {
+                $radios.filter('[value=""]').prop('checked', true)
+                    .closest('.tjobs-yesno-option').addClass('is-selected');
+                $row.find('.tjobs-unsuitable-value-field').val('');
+            }
+        } else {
+            var hiddenVal = $row.find('.tjobs-unsuitable-value-field').val();
+            $row.find('.tjobs-unsuitable-yesno-picker').hide();
+            $row.find('.tjobs-unsuitable-text-input').show();
+            // Sync hidden value to text overlay
+            $row.find('.tjobs-unsuitable-text-field').val(hiddenVal);
+        }
+    });
+
+    // Sync text input overlay to hidden master field
+    $(document).on('input change', '.tjobs-unsuitable-text-field', function() {
+        var $row = $(this).closest('.tjobs-question-row');
+        $row.find('.tjobs-unsuitable-value-field').val($(this).val());
+    });
+
+    // Sync yesno radio picker to hidden master field
+    $(document).on('change', '.tjobs-unsuitable-yesno-radio', function() {
+        var $row = $(this).closest('.tjobs-question-row');
+        $row.find('.tjobs-unsuitable-value-field').val($(this).val());
+        // Update visual selection
+        $row.find('.tjobs-yesno-option').removeClass('is-selected');
+        $(this).closest('.tjobs-yesno-option').addClass('is-selected');
     });
 });
 </script>
@@ -449,9 +491,39 @@ $show_options = ( $type === 'select' );
             <div class="tjobs-metabox-field">
                 <label class="tjobs-metabox-label">
                     <?php esc_html_e( 'Epäsopiva arvo', 'tapojarvijobs' ); ?>
-                    <span class="tjobs-metabox-desc"><?php esc_html_e( 'yes/no: no | scale: 1,2 | select: vaihtoehdon teksti', 'tapojarvijobs' ); ?></span>
                 </label>
-                <input type="text" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][unsuitable_value]" value="<?php echo esc_attr( $unsuitable_value ); ?>" class="tjobs-metabox-input" placeholder="<?php esc_attr_e( 'Esim: no, 1, 2 (pilkulla erotettuna)', 'tapojarvijobs' ); ?>" />
+
+                <?php /* Single hidden input that always carries the submitted value */ ?>
+                <input type="hidden" name="tjobs_info_questions[<?php echo esc_attr( $index ); ?>][unsuitable_value]" class="tjobs-unsuitable-value-field" value="<?php echo esc_attr( $unsuitable_value ); ?>" />
+
+                <?php /* Text input overlay: shown for non-yesno question types */ ?>
+                <div class="tjobs-unsuitable-text-input" <?php echo ( $type === 'yesno' ) ? 'style="display:none;"' : ''; ?>>
+                    <input type="text" class="tjobs-metabox-input tjobs-unsuitable-text-field" value="<?php echo ( $type !== 'yesno' ) ? esc_attr( $unsuitable_value ) : ''; ?>" placeholder="<?php esc_attr_e( 'Esim: no, 1, 2 (pilkulla erotettuna)', 'tapojarvijobs' ); ?>" />
+                    <span class="tjobs-metabox-desc"><?php esc_html_e( 'scale: 1,2 | select: vaihtoehdon teksti', 'tapojarvijobs' ); ?></span>
+                </div>
+
+                <?php /* Radio picker: shown only for yesno question types */ ?>
+                <div class="tjobs-unsuitable-yesno-picker" <?php echo ( $type !== 'yesno' ) ? 'style="display:none;"' : ''; ?>>
+                    <p class="tjobs-metabox-desc" style="margin-bottom:8px;"><?php esc_html_e( 'Kumpi vastaus on epäsopiva?', 'tapojarvijobs' ); ?></p>
+                    <div class="tjobs-unsuitable-yesno-options">
+                        <label class="tjobs-yesno-option <?php echo ( $type === 'yesno' && $unsuitable_value === 'yes' ) ? 'is-selected' : ''; ?>">
+                            <input type="radio" class="tjobs-unsuitable-yesno-radio" value="yes"
+                                   <?php checked( $type === 'yesno' && $unsuitable_value === 'yes' ); ?> />
+                            <span><?php esc_html_e( 'Kyllä (Yes)', 'tapojarvijobs' ); ?></span>
+                        </label>
+                        <label class="tjobs-yesno-option <?php echo ( $type === 'yesno' && $unsuitable_value === 'no' ) ? 'is-selected' : ''; ?>">
+                            <input type="radio" class="tjobs-unsuitable-yesno-radio" value="no"
+                                   <?php checked( $type === 'yesno' && $unsuitable_value === 'no' ); ?> />
+                            <span><?php esc_html_e( 'Ei (No)', 'tapojarvijobs' ); ?></span>
+                        </label>
+                        <label class="tjobs-yesno-option <?php echo ( $type === 'yesno' && $unsuitable_value !== 'yes' && $unsuitable_value !== 'no' ) ? 'is-selected' : ''; ?>">
+                            <input type="radio" class="tjobs-unsuitable-yesno-radio" value=""
+                                   <?php checked( $type === 'yesno' && $unsuitable_value !== 'yes' && $unsuitable_value !== 'no' ); ?> />
+                            <span><?php esc_html_e( 'Kumpikaan', 'tapojarvijobs' ); ?></span>
+                        </label>
+                    </div>
+                </div>
+
                 <?php if ( ! empty( $unsuitable_value ) ) : ?>
                 <span class="tjobs-unsuitable-hint">
                     💡 <?php echo esc_html( sprintf( __( 'Palaute aktivoituu arvo(i)lla: %s', 'tapojarvijobs' ), $unsuitable_value ) ); ?>

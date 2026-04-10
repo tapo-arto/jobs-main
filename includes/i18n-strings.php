@@ -62,10 +62,10 @@ return array(
         'it' => 'Generale',
     ),
     'tab.videos' => array(
-        'fi' => 'Videot',
-        'en' => 'Videos',
-        'sv' => 'Videor',
-        'it' => 'Video',
+        'fi' => 'Media',
+        'en' => 'Media',
+        'sv' => 'Media',
+        'it' => 'Media',
     ),
     'tab.questions' => array(
         'fi' => 'Kysymykset',
