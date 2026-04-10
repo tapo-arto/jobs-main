@@ -65,13 +65,24 @@ if ( $manual_link && is_numeric( $manual_link ) ) {
 // 2. Automaattinen valinta pisteytyksen perusteella
 $default_lang = tjobs_get_default_lang();
 
-// Hae kaikki julkaistut infopaketit oletuskielellä (välttää duplikaatit)
-$packages_query = new WP_Query( array(
+// Hae kaikki julkaistut infopaketit oletuskielellä (välttää duplikaatit).
+// Jos kielisuodatus on käytössä (Polylang) mutta ei palauta tuloksia (esim. infopaketeille
+// ei ole asetettu kielimääritystä), haetaan uudelleen ilman kielisuodatusta.
+$lang_query_arg  = function_exists( 'pll_default_language' ) ? $default_lang : '';
+$packages_query  = new WP_Query( array(
     'post_type'      => 'tjobs_infopackage',
     'post_status'    => 'publish',
     'posts_per_page' => -1,
-    'lang'           => function_exists( 'pll_default_language' ) ? $default_lang : '',
+    'lang'           => $lang_query_arg,
 ) );
+
+if ( ! $packages_query->have_posts() && ! empty( $lang_query_arg ) ) {
+    $packages_query = new WP_Query( array(
+        'post_type'      => 'tjobs_infopackage',
+        'post_status'    => 'publish',
+        'posts_per_page' => -1,
+    ) );
+}
 
 if ( ! $packages_query->have_posts() ) {
     return null;

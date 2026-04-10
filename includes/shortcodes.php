@@ -435,19 +435,14 @@ foreach ($countries as $code => $country_data) {
             $output .= '</div>'; // tjobs-job-card__content
 
             if (!empty($apply_url)) {
-                $infopackage_id = function_exists('tjobs_resolve_infopackage') ? tjobs_resolve_infopackage($post_id, $lang_code) : null;
                 $output .= '<div class="tjobs-job-card__action">';
-                if ($infopackage_id) {
-                    // Job has an infopackage: button opens modal
-                    $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
-                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                    $output .= '</button>';
-                } else {
-                    // No infopackage: direct link to application form
-                    $output .= '<a href="' . esc_url($apply_url) . '" target="_blank" rel="noopener" class="tjobs-job-card__apply-btn" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
-                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                    $output .= '</a>';
-                }
+                // Always render as a button so the modal JS can check the REST API for an
+                // infopackage at click time, rather than relying on a PHP-side check that
+                // may be affected by Polylang language context or caching.  The JS will
+                // redirect to data-apply-url if the REST API reports no infopackage.
+                $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" data-apply-url="' . esc_url( $apply_url ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
+                $output .= '</button>';
                 $output .= '</div>';
             }
 

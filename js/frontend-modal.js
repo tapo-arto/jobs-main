@@ -15,6 +15,7 @@
 
     let currentJobId = null;
     let currentLang = null;
+    let currentApplyUrl = '';
     let modalElement = null;
     let lightboxElement = null;
     let i18n = {};
@@ -41,8 +42,9 @@
             if (jobLink) {
                 e.preventDefault();
                 const jobId = jobLink.getAttribute('data-job-id');
+                const applyUrl = jobLink.getAttribute('data-apply-url') || '';
                 if (jobId) {
-                    openModal(jobId);
+                    openModal(jobId, null, applyUrl);
                 }
             }
         });
@@ -94,9 +96,10 @@
     /**
      * Avaa modal
      */
-    function openModal(jobId, lang) {
+    function openModal(jobId, lang, applyUrl) {
         currentJobId = jobId;
         currentLang = lang || (window.tjobsModalConfig ? window.tjobsModalConfig.lang : 'fi');
+        currentApplyUrl = applyUrl || '';
         currentTab = 'general'; // Reset to first tab
 
         // Peruuta mahdollinen odottava sulkemis-timeout
@@ -196,6 +199,19 @@
                 // Varmista modal on yhä olemassa ja DOM:ssa ennen renderöintiä
                 if (!modalElement || !isInDocument(modalElement)) return;
                 i18n = data.i18n || i18n;
+
+                // Jos infopakettia ei löydy, sulje modal ja ohjaa suoraan hakemukseen
+                if (!data.infopackage) {
+                    const targetUrl = data.apply_url || currentApplyUrl;
+                    closeModal();
+                    if (targetUrl && /^https?:\/\//i.test(targetUrl)) {
+                        if (!window.open(targetUrl, '_blank', 'noopener,noreferrer')) {
+                            window.location.href = targetUrl;
+                        }
+                    }
+                    return;
+                }
+
                 renderJobInfo(data);
             })
             .catch(error => {
@@ -411,7 +427,7 @@
             btn.addEventListener('click', function() {
                 const newLang = this.getAttribute('data-lang');
                 if (newLang && newLang !== currentLang) {
-                    openModal(currentJobId, newLang);
+                    openModal(currentJobId, newLang, currentApplyUrl);
                 }
             });
         });
