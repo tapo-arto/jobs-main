@@ -250,13 +250,14 @@ foreach ($feed_items as $item) {
         // ===== Vertailu: Onko otsikko tai excerpt muuttunut? =====
         $old_title   = get_the_title($post_id);
         $old_excerpt = get_post_field('post_excerpt', $post_id);
+        $old_content = get_post_field('post_content', $post_id);
 
         $new_title   = wp_strip_all_tags($title);
         $new_excerpt = wp_strip_all_tags($desc_final);
         $new_content = wp_kses_post($laura_description);
 
         // Päivitä vain jos on tarvetta
-        if ($old_title !== $new_title || $old_excerpt !== $new_excerpt || get_post_field('post_content', $post_id) !== $new_content) {
+        if ($old_title !== $new_title || $old_excerpt !== $new_excerpt || $old_content !== $new_content) {
             wp_update_post(array(
                 'ID'           => $post_id,
                 'post_title'   => $new_title,
