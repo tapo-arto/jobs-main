@@ -36,18 +36,21 @@
      * Alusta modal
      */
     function init() {
-        // Käytä event delegation job-linkkien klikkauksiin
+        // Käytä event delegation job-linkkien klikkauksiin.
+        // Capture-vaihe (true) varmistaa, että oma koodimme nappaa klikkauksen
+        // ennen kuin Elementor Pro tai Ajax Search Pro ehtii estää sen stopPropagation():lla.
         document.addEventListener('click', function(e) {
             const jobLink = e.target.closest('[data-job-id]');
             if (jobLink) {
                 e.preventDefault();
+                e.stopPropagation();
                 const jobId = jobLink.getAttribute('data-job-id');
-                const applyUrl = jobLink.getAttribute('data-apply-url') || '';
+                const applyUrl = jobLink.getAttribute('data-apply-url') || jobLink.getAttribute('href') || '';
                 if (jobId) {
                     openModal(jobId, null, applyUrl);
                 }
             }
-        });
+        }, true);
 
         // ESC-näppäin sulkee modalin tai lightboxin
         document.addEventListener('keydown', function(e) {
