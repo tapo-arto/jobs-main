@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Tapojärvi Jobs Infopaketit (V2)
  * Description: Tapojärvi Jobs Infopaketit – erillinen lisäosa RSS-synkronointiin, infopaketteihin, REST API:hin, Gutenberg-blokkiin ja Schema.org-merkintöihin.
- * Version: 4.0.7
+ * Version: 4.0.8
  * Author: Arto Huhta
  * Text Domain: tapojarvijobs
  * Requires at least: 5.8
