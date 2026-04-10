@@ -436,13 +436,12 @@ foreach ($countries as $code => $country_data) {
 
             if (!empty($apply_url)) {
                 $output .= '<div class="tjobs-job-card__action">';
-                // Always render as a button so the modal JS can check the REST API for an
-                // infopackage at click time, rather than relying on a PHP-side check that
-                // may be affected by Polylang language context or caching.  The JS will
-                // redirect to data-apply-url if the REST API reports no infopackage.
-                $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" data-apply-url="' . esc_url( $apply_url ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                // Renderöidään aina <a>-elementti data-job-id:llä välimuistista riippumatta.
+                // JS käyttää data-job-id:tä modaalin avaamiseen (capture-vaiheessa).
+                // Jos JS ei toimi, linkki ohjaa suoraan hakemukseen (fallback).
+                $output .= '<a href="' . esc_url( $apply_url ) . '" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '" target="_blank" rel="noopener">';
                 $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                $output .= '</button>';
+                $output .= '</a>';
                 $output .= '</div>';
             }
 
