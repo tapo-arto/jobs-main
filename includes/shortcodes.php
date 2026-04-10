@@ -140,6 +140,20 @@ if (strtolower($args['import']) === 'yes') {
     tjobs_sync_feed();
 }
 
+// Auto-synkronointi: jos ei ole yhtään julkaistua työpaikkaa, haetaan data automaattisesti.
+static $tjobs_auto_sync_done = false;
+if ( ! $tjobs_auto_sync_done ) {
+    $tjobs_auto_sync_done = true;
+    $total_jobs_count = wp_count_posts( 'tjobs_tyopaikat' );
+    $total_published  = isset( $total_jobs_count->publish ) ? (int) $total_jobs_count->publish : 0;
+    if ( $total_published === 0 ) {
+        $last_sync = (int) get_option( 'tjobs_last_sync', 0 );
+        if ( ( time() - $last_sync ) > 5 * MINUTE_IN_SECONDS ) {
+            tjobs_sync_feed();
+        }
+    }
+}
+
 // Hae työpaikat Custom Post Type -tietokannasta
 $query_args = array(
     'post_type'      => 'tjobs_tyopaikat',

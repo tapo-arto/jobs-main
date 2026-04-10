@@ -548,14 +548,14 @@
     justify-content: center;
     width: 100%;
     padding: 16px 24px;
-    background: #FEE000;
-    color: #000000;
+    background: #FEE000 !important;
+    color: #000000 !important;
     text-align: center;
     font-size: 17px;
     font-weight: 600;
     border: none;
     border-radius: 12px;
-    text-decoration: none;
+    text-decoration: none !important;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(254, 224, 0, 0.4);
@@ -563,11 +563,11 @@
 }
 
 .tjobs-cta-button:hover {
-    background: #000000;
-    color: #FEE000;
+    background: #000000 !important;
+    color: #FEE000 !important;
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    text-decoration: none;
+    text-decoration: none !important;
 }
 
 .tjobs-cta-button:active {
@@ -944,4 +944,37 @@
     line-height: 1.7;
     color: #374151;
     white-space: pre-wrap;
+}
+
+/* === Job Description (laura:description from RSS) === */
+.tjobs-modal__job-description {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #374151;
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tjobs-modal__job-description p {
+    margin: 0 0 12px 0;
+}
+
+.tjobs-modal__job-description p:last-child {
+    margin-bottom: 0;
+}
+
+.tjobs-modal__job-description ul,
+.tjobs-modal__job-description ol {
+    margin: 8px 0 12px 0;
+    padding-left: 1.5em;
+}
+
+.tjobs-modal__job-description li {
+    margin-bottom: 4px;
+    line-height: 1.6;
+}
+
+.tjobs-modal__job-description strong {
+    color: #111827;
 }

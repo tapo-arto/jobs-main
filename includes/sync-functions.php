@@ -194,6 +194,9 @@ foreach ($feed_items as $item) {
     $enddate_tag = $item->get_item_tags($laura_ns, 'enddate');
     $enddate     = (!empty($enddate_tag[0]['data'])) ? trim($enddate_tag[0]['data']) : '';
 
+    $laura_desc_tag  = $item->get_item_tags($laura_ns, 'description');
+    $laura_description = (!empty($laura_desc_tag[0]['data'])) ? trim($laura_desc_tag[0]['data']) : '';
+
     // -- Puhdista linkki heti alussa --
     $clean_link = tjobs_clean_url($link);
     $current_feed_links[] = $clean_link;
@@ -247,16 +250,19 @@ foreach ($feed_items as $item) {
         // ===== Vertailu: Onko otsikko tai excerpt muuttunut? =====
         $old_title   = get_the_title($post_id);
         $old_excerpt = get_post_field('post_excerpt', $post_id);
+        $old_content = get_post_field('post_content', $post_id);
 
         $new_title   = wp_strip_all_tags($title);
         $new_excerpt = wp_strip_all_tags($desc_final);
+        $new_content = wp_kses_post($laura_description);
 
         // Päivitä vain jos on tarvetta
-        if ($old_title !== $new_title || $old_excerpt !== $new_excerpt) {
+        if ($old_title !== $new_title || $old_excerpt !== $new_excerpt || $old_content !== $new_content) {
             wp_update_post(array(
                 'ID'           => $post_id,
                 'post_title'   => $new_title,
                 'post_excerpt' => $new_excerpt,
+                'post_content' => $new_content,
             ));
             $updated[] = $post_id;
         }
@@ -276,7 +282,7 @@ foreach ($feed_items as $item) {
             'post_status'  => 'publish',
             'post_title'   => wp_strip_all_tags($title),
             'post_excerpt' => wp_strip_all_tags($desc_final),
-            'post_content' => '',
+            'post_content' => wp_kses_post($laura_description),
         ));
         if (!is_wp_error($new_post_id)) {
             update_post_meta($new_post_id, '_tjobs_rss_link', tjobs_clean_url($link));
