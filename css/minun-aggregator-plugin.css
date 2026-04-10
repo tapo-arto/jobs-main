@@ -104,9 +104,9 @@
     --tjobs-tag-bg: #f3f4f6;
     --tjobs-tag-border: #e5e7eb;
 
-    /* Hae paikkaa -nappi – musta vaalealla teemalla */
-    --tjobs-btn-bg: #1a1a1a;
-    --tjobs-btn-text: #ffffff;
+    /* Hae paikkaa -nappi – keltainen pohja vaalealla teemalla */
+    --tjobs-btn-bg: var(--tjobs-brand);
+    --tjobs-btn-text: #000000;
     --tjobs-btn-hover-bg: #000000;
     --tjobs-btn-hover-text: var(--tjobs-brand);
 
