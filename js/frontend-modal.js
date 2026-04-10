@@ -12,6 +12,7 @@
     let lightboxElement = null;
     let i18n = {};
     let currentTab = 'general';
+    let closeTimer = null;
 
     /**
      * Alusta modal
@@ -39,6 +40,22 @@
                 }
             }
         });
+
+        // Käsittele bfcache-palautus: varmista modal on suljettu
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted && modalElement) {
+                if (closeTimer) {
+                    clearTimeout(closeTimer);
+                    closeTimer = null;
+                }
+                modalElement.classList.remove('is-open');
+                document.body.style.overflow = '';
+                const content = modalElement.querySelector('.tjobs-modal__content');
+                if (content) {
+                    content.innerHTML = '';
+                }
+            }
+        });
     }
 
     /**
@@ -48,6 +65,12 @@
         currentJobId = jobId;
         currentLang = lang || (window.tjobsModalConfig ? window.tjobsModalConfig.lang : 'fi');
         currentTab = 'general'; // Reset to first tab
+
+        // Peruuta mahdollinen odottava sulkemis-timeout
+        if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+        }
 
         // Luo modal DOM jos ei ole vielä
         if (!modalElement) {
@@ -72,7 +95,8 @@
         document.body.style.overflow = '';
 
         // Odota transition ennen sisällön tyhjennystä
-        setTimeout(function() {
+        closeTimer = setTimeout(function() {
+            closeTimer = null;
             const content = modalElement.querySelector('.tjobs-modal__content');
             if (content) {
                 content.innerHTML = '';
