@@ -340,6 +340,21 @@ $args = shortcode_atts(array(
 $theme_class = ($args['theme'] === 'light') ? 'tjobs-theme-light' : 'tjobs-theme-dark';
 $output = '<div class="tjobs-jobs-by-country ' . esc_attr($theme_class) . '">';
 
+// Auto-synkronointi: jos ei ole yhtään julkaistua työpaikkaa, haetaan data automaattisesti.
+// Käytetään staattista muuttujaa, jotta tarkistus tehdään korkeintaan kerran per sivulataus.
+static $tjobs_auto_sync_done = false;
+if ( ! $tjobs_auto_sync_done ) {
+    $tjobs_auto_sync_done = true;
+    $total_jobs_count = wp_count_posts( 'tjobs_tyopaikat' );
+    $total_published  = isset( $total_jobs_count->publish ) ? (int) $total_jobs_count->publish : 0;
+    if ( $total_published === 0 ) {
+        $last_sync = (int) get_option( 'tjobs_last_sync', 0 );
+        if ( ( time() - $last_sync ) > 5 * MINUTE_IN_SECONDS ) {
+            tjobs_sync_feed();
+        }
+    }
+}
+
 foreach ($countries as $code => $country_data) {
     // Maan nimi nykyisellä kielellä
     $country_name = isset($country_data[$lang_code]) ? $country_data[$lang_code] : $country_data['en'];
@@ -385,11 +400,6 @@ foreach ($countries as $code => $country_data) {
             // Käytä form_url:ia ensisijaisesti, fallback _tjobs_rss_link
             $apply_url = !empty($form_url) ? $form_url : get_post_meta($post_id, '_tjobs_rss_link', true);
 
-            // Tarkista onko infopaketti saatavilla
-            $has_infopackage = function_exists( 'tjobs_resolve_infopackage' )
-                ? tjobs_resolve_infopackage( $post_id, $lang_code )
-                : null;
-
             $output .= '<article class="tjobs-job-card">';
             $output .= '<div class="tjobs-job-card__content">';
 
@@ -425,18 +435,11 @@ foreach ($countries as $code => $country_data) {
             $output .= '</div>'; // tjobs-job-card__content
 
             if (!empty($apply_url)) {
+                // Nappi avaa aina modal-infopaneelin; data haetaan dynaamisesti REST API:sta
                 $output .= '<div class="tjobs-job-card__action">';
-                if ( $has_infopackage ) {
-                    // Nappi avaa infopaketti-modalin
-                    $output .= '<button type="button" class="tjobs-job-card__apply-btn tjobs-apply-btn-action" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
-                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                    $output .= '</button>';
-                } else {
-                    // Suora linkki hakemukseen
-                    $output .= '<a href="' . esc_url($apply_url) . '" target="_blank" rel="noopener" class="tjobs-job-card__apply-btn">';
-                    $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
-                    $output .= '</a>';
-                }
+                $output .= '<button type="button" class="tjobs-job-card__apply-btn" data-job-id="' . esc_attr( $post_id ) . '" aria-label="' . esc_attr( $t['apply'] . ': ' . $title ) . '">';
+                $output .= esc_html($t['apply']) . ' <span class="tjobs-job-card__arrow">→</span>';
+                $output .= '</button>';
                 $output .= '</div>';
             }
 
