@@ -63,7 +63,8 @@
     /* Hae paikkaa -nappi */
     --tjobs-btn-bg: var(--tjobs-brand);
     --tjobs-btn-text: #000000;
-    --tjobs-btn-hover-bg: var(--tjobs-brand-hover);
+    --tjobs-btn-hover-bg: #000000;
+    --tjobs-btn-hover-text: var(--tjobs-brand);
 
     /* Country count badge */
     --tjobs-count-color: var(--tjobs-brand);
@@ -106,7 +107,8 @@
     /* Hae paikkaa -nappi – musta vaalealla teemalla */
     --tjobs-btn-bg: #1a1a1a;
     --tjobs-btn-text: #ffffff;
-    --tjobs-btn-hover-bg: #333333;
+    --tjobs-btn-hover-bg: #000000;
+    --tjobs-btn-hover-text: var(--tjobs-brand);
 
     /* Country count badge */
     --tjobs-count-color: #374151;
@@ -286,15 +288,19 @@
     font-family: inherit;
     line-height: inherit;
     text-decoration: none !important;
-    transition: background 0.2s ease, transform 0.15s ease;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
     white-space: nowrap;
     cursor: pointer;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    vertical-align: middle;
 }
 
 .tjobs-job-card__apply-btn:hover {
     background: var(--tjobs-btn-hover-bg);
     transform: scale(1.03);
-    color: var(--tjobs-btn-text) !important;
+    color: var(--tjobs-btn-hover-text) !important;
     text-decoration: none !important;
 }
 
