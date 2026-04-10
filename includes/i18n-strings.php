@@ -55,6 +55,12 @@ return array(
     ),
 
     // Tab names
+    'tab.announcement' => array(
+        'fi' => 'Ilmoitus',
+        'en' => 'Job Posting',
+        'sv' => 'Platsannons',
+        'it' => 'Annuncio',
+    ),
     'tab.general' => array(
         'fi' => 'Yleistä',
         'en' => 'General',

@@ -19,7 +19,7 @@
     let modalElement = null;
     let lightboxElement = null;
     let i18n = {};
-    let currentTab = 'general';
+    let currentTab = 'announcement';
     let closeTimer = null;
 
     /**
@@ -103,7 +103,7 @@
         currentJobId = jobId;
         currentLang = lang || (window.tjobsModalConfig ? window.tjobsModalConfig.lang : 'fi');
         currentApplyUrl = applyUrl || '';
-        currentTab = 'general'; // Reset to first tab
+        currentTab = 'announcement'; // Reset to first tab
 
         // Peruuta mahdollinen odottava sulkemis-timeout
         if (closeTimer) {
@@ -266,10 +266,18 @@
 
     function renderJobInfoInner(data, content) {
         const pkg = data.infopackage;
+        const hasDescription = data.description && data.description.trim();
         const hasMedia = pkg && ((pkg.video_url && pkg.video_url.trim()) || (pkg.gallery && pkg.gallery.length > 0));
         const hasQuestions = pkg && pkg.questions && pkg.questions.length > 0;
         const hasSections = pkg && pkg.sections && pkg.sections.length > 0;
-        const showTabs = hasMedia || hasQuestions || hasSections;
+        const showTabs = hasDescription || hasMedia || hasQuestions || hasSections;
+
+        // Set active tab: announcement if description exists, otherwise general
+        if (hasDescription) {
+            currentTab = 'announcement';
+        } else {
+            currentTab = 'general';
+        }
 
         let html = '';
 
@@ -306,29 +314,46 @@
         // Tabit (jos tarvitaan)
         if (showTabs) {
             html += '<div class="tjobs-modal__tabs">';
-            html += `<button type="button" class="tjobs-tab-btn is-active" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
+
+            // 1. Ilmoitus-välilehti (ensimmäinen, oletuksena aktiivinen)
+            if (hasDescription) {
+                html += `<button type="button" class="tjobs-tab-btn is-active" data-tab="announcement">${i18n['tab.announcement'] || 'Ilmoitus'}</button>`;
+            }
+
+            // 2. Yleistä-välilehti
+            if (pkg) {
+                html += `<button type="button" class="tjobs-tab-btn${!hasDescription ? ' is-active' : ''}" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
+            }
+
+            // 3. Media
             if (hasMedia) {
                 html += `<button type="button" class="tjobs-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Media'}</button>`;
             }
+
+            // 4. Lisätiedot
             if (hasSections) {
                 html += `<button type="button" class="tjobs-tab-btn" data-tab="details">${i18n['tab.details'] || 'Lisätiedot'}</button>`;
             }
+
+            // 5. Kysymykset
             if (hasQuestions) {
                 html += `<button type="button" class="tjobs-tab-btn" data-tab="questions">${i18n['tab.questions'] || 'Kysymykset'}</button>`;
             }
+
+            html += '</div>';
+        }
+
+        // Tab-sisältö: Ilmoitus (työpaikkailmoitus RSS:stä)
+        if (hasDescription) {
+            html += '<div class="tjobs-tab-content" data-tab-content="announcement">';
+            // Note: Server sanitizes with wp_kses_post (WordPress standard for post content)
+            // This is the same sanitization used for all WordPress post content and is safe to render as HTML
+            html += `<div class="tjobs-modal__job-description">${data.description}</div>`;
             html += '</div>';
         }
 
         // Tab-sisältö: Yleistä
-        html += `<div class="tjobs-tab-content" data-tab-content="general">`;
-        
-        // Työn kuvaus (laura:description)
-        // Note: Server sanitizes with wp_kses_post (WordPress standard for post content)
-        // This is the same sanitization used for all WordPress post content and is safe to render as HTML
-        if (data.description) {
-            html += '<div class="tjobs-modal__job-description">' + data.description + '</div>';
-        }
-        
+        html += `<div class="tjobs-tab-content" data-tab-content="general"${hasDescription ? ' style="display:none;"' : ''}>`;        
         if (pkg) {
             // Highlights
             if (pkg.highlights && pkg.highlights.length > 0) {
