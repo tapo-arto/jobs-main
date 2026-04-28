@@ -2,6 +2,14 @@
 
 Kaikki merkittävät muutokset dokumentoidaan tähän tiedostoon.
 
+## [4.2.1] - 2026-04-28
+
+### Muutettu
+- **Modernisoitu wizard-UI** (`js/frontend-modal.js`, CSS): progress bar korvattu kompaktilla yhtenäisellä palkilla + ohuilla pisteillä; numeroidut keltaiset laatikot poistettu.
+- **Sticky-navigointi**: modaalin pohjaan kiinteä footer "Edellinen / Seuraava / Apply" -napeilla – ei tarvitse enää skrollata sisällön loppuun edetäkseen.
+- Modaalin layout flexboxiin: header ja footer pysyvät paikallaan, vain sisältöalue skrollaa.
+- Plugin-headerin `Version` päivitetty `4.2.1`:ksi.
+
 ## [4.2.0] - 2026-04-28
 
 ### Lisätty

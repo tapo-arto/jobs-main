@@ -326,6 +326,9 @@
 
         let html = '';
 
+        // Header section (sticky top)
+        html += '<div class="tjobs-modal__header">';
+
         // Top bar: sulkemisnappi ja kielivalitsin
         html += '<div class="tjobs-modal__topbar">';
         html += '<button type="button" class="tjobs-modal__close" aria-label="Close">&times;</button>';
@@ -356,23 +359,24 @@
             html += `<div class="tjobs-modal__excerpt">${escapeHtml(data.excerpt)}</div>`;
         }
 
-        // === WIZARD PROGRESS BAR ===
+        html += '</div>'; // .tjobs-modal__header
+
+        // === WIZARD PROGRESS BAR (compact: pip dots + thin track + label) ===
         if (showTabs && wizardSteps.length > 0) {
             const totalSteps = wizardSteps.length;
-            const pct = totalSteps > 1 ? Math.round((0 / (totalSteps - 1)) * 100) : 100;
+            const pctFill = Math.round(((wizardCurrentIndex + 1) / totalSteps) * 100);
+            const stepOfText = i18n['wizard.step_of']
+                ? i18n['wizard.step_of'].replace('%1$d', 1).replace('%2$d', totalSteps)
+                : `1 / ${totalSteps}`;
+            const firstTabObj = configTabs.find(t => t.id === wizardSteps[0]) || {label: 'tab.' + wizardSteps[0]};
+            const firstStepName = i18n[firstTabObj.label] || wizardSteps[0];
 
-            html += '<div class="tjobs-wizard-header">';
+            html += '<div class="tjobs-wizard-progress">';
+            html += `<div class="tjobs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pctFill}" aria-label="${escapeHtml(stepOfText)}">`;
 
-            // Progress bar
-            html += `<div class="tjobs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${i18n['wizard.step_of'] ? i18n['wizard.step_of'].replace('%1$d', 1).replace('%2$d', totalSteps) : '1 / ' + totalSteps}">`;
-            html += '<div class="tjobs-progress__track">';
-            html += `<div class="tjobs-progress__fill" style="width:${pct}%"></div>`;
-            html += '</div>';
-            html += '</div>';
-
-            // Step dots
+            // Pip dots (small circles per step)
             if (totalSteps > 1) {
-                html += '<div class="tjobs-step-dots" role="list">';
+                html += '<div class="tjobs-progress-dots">';
                 wizardSteps.forEach((stepId, idx) => {
                     const tabObj = configTabs.find(t => t.id === stepId) || {label: 'tab.' + stepId};
                     const stepLabel = i18n[tabObj.label] || stepId;
@@ -380,22 +384,30 @@
                     const dotClass = isActive ? 'tjobs-step-dot is-active' : 'tjobs-step-dot';
                     const ariaCurrent = isActive ? ' aria-current="step"' : '';
                     const disabled = (wizardForceLinear && !wizardVisited.has(idx)) ? ' disabled' : '';
-                    html += `<button type="button" class="${dotClass}" data-step-index="${idx}" aria-label="${escapeHtml(stepLabel)}"${ariaCurrent}${disabled} role="listitem">`;
-                    html += `<span class="tjobs-step-dot__circle" aria-hidden="true">${idx + 1}</span>`;
-                    html += `<span class="tjobs-step-dot__label">${escapeHtml(stepLabel)}</span>`;
+                    html += `<button type="button" class="${dotClass}" data-step-index="${idx}" aria-label="${escapeHtml(stepLabel)}"${ariaCurrent}${disabled}>`;
+                    html += '<span class="tjobs-step-dot__pip" aria-hidden="true"></span>';
                     html += '</button>';
                 });
-                html += '</div>';
+                html += '</div>'; // .tjobs-progress-dots
             }
 
-            // Vaihe X / Y -teksti
-            const stepOfText = i18n['wizard.step_of']
-                ? i18n['wizard.step_of'].replace('%1$d', 1).replace('%2$d', totalSteps)
-                : `1 / ${totalSteps}`;
-            html += `<div class="tjobs-wizard-step-counter" aria-live="polite" aria-atomic="true">${escapeHtml(stepOfText)}</div>`;
+            // Thin progress track + animated fill
+            html += '<div class="tjobs-progress-track">';
+            html += `<div class="tjobs-progress-fill" style="width:${pctFill}%"></div>`;
+            html += '</div>';
 
-            html += '</div>'; // .tjobs-wizard-header
+            // Active step name + step counter
+            html += '<div class="tjobs-progress-label">';
+            html += `<span class="tjobs-progress-step-name">${escapeHtml(firstStepName)}</span>`;
+            html += `<span class="tjobs-wizard-step-counter" aria-live="polite" aria-atomic="true">${escapeHtml(stepOfText)}</span>`;
+            html += '</div>';
+
+            html += '</div>'; // .tjobs-progress
+            html += '</div>'; // .tjobs-wizard-progress
         }
+
+        // Scrollable content area
+        html += '<div class="tjobs-modal__scroll-area">';
 
         // Tab-sisältö: Ilmoitus (työpaikkailmoitus RSS:stä)
         if (hasDescription) {
@@ -513,13 +525,15 @@
             </div>`;
         }
 
-        // Wizard navigointipainikkeet (näytetään kun vaiheita on enemmän kuin yksi)
+        html += '</div>'; // .tjobs-modal__scroll-area
+
+        // Sticky footer: wizard navigointipainikkeet (näytetään kun vaiheita on enemmän kuin yksi)
         if (showTabs && wizardSteps.length > 1) {
             const prevLabel = i18n['wizard.prev'] || 'Edellinen';
             const nextLabel = (i18n['wizard.next'] || 'Seuraava') + ' →';
-            html += '<div class="tjobs-wizard-nav">';
-            // Edellinen-nappi (piilotettu ensimmäisellä askeleella)
-            html += `<button type="button" class="tjobs-wizard-nav__prev" style="display:none;" aria-label="${escapeHtml(prevLabel)}">← ${escapeHtml(prevLabel)}</button>`;
+            html += '<div class="tjobs-wizard-footer">';
+            // Edellinen-nappi (piilotettu ensimmäisellä askeleella, visibility:hidden säilyttää tilan)
+            html += `<button type="button" class="tjobs-wizard-nav__prev" style="visibility:hidden;" disabled aria-label="${escapeHtml(prevLabel)}">← ${escapeHtml(prevLabel)}</button>`;
             // Seuraava-nappi
             html += `<button type="button" class="tjobs-wizard-nav__next" aria-label="${escapeHtml(nextLabel)}">${escapeHtml(nextLabel)}</button>`;
             html += '</div>';
@@ -545,14 +559,25 @@
         }
         if (!contentEl || wizardSteps.length === 0) { return; }
 
+        const config = window.tjobsModalConfig || {};
+        const configTabs = config.tabs && config.tabs.length
+            ? config.tabs
+            : [
+                {id: 'announcement', label: 'tab.announcement'},
+                {id: 'general',      label: 'tab.general'},
+                {id: 'videos',       label: 'tab.videos'},
+                {id: 'details',      label: 'tab.details'},
+                {id: 'questions',    label: 'tab.questions'}
+              ];
+
         const totalSteps = wizardSteps.length;
-        const pct = totalSteps > 1 ? Math.round((wizardCurrentIndex / (totalSteps - 1)) * 100) : 100;
+        const pct = Math.round(((wizardCurrentIndex + 1) / totalSteps) * 100);
         const isFirst = wizardCurrentIndex === 0;
         const isLast  = wizardCurrentIndex === totalSteps - 1;
 
         // Progress bar
         const progressBar  = contentEl.querySelector('.tjobs-progress');
-        const progressFill = contentEl.querySelector('.tjobs-progress__fill');
+        const progressFill = contentEl.querySelector('.tjobs-progress-fill');
         if (progressBar) {
             progressBar.setAttribute('aria-valuenow', pct);
             const stepOfText = i18n['wizard.step_of']
@@ -582,13 +607,19 @@
             }
         });
 
-        // Vaihe X / Y -teksti
+        // Vaihe X / Y -teksti + aktiivisen vaiheen nimi
         const counter = contentEl.querySelector('.tjobs-wizard-step-counter');
         if (counter) {
             const stepOfText = i18n['wizard.step_of']
                 ? i18n['wizard.step_of'].replace('%1$d', wizardCurrentIndex + 1).replace('%2$d', totalSteps)
                 : `${wizardCurrentIndex + 1} / ${totalSteps}`;
             counter.textContent = stepOfText;
+        }
+
+        const stepNameEl = contentEl.querySelector('.tjobs-progress-step-name');
+        if (stepNameEl) {
+            const currentTabObj = configTabs.find(t => t.id === wizardSteps[wizardCurrentIndex]) || {label: 'tab.' + wizardSteps[wizardCurrentIndex]};
+            stepNameEl.textContent = i18n[currentTabObj.label] || wizardSteps[wizardCurrentIndex];
         }
 
         // Näytä aktiivinen tab-sisältö
@@ -605,7 +636,7 @@
         const ctaSection = contentEl.querySelector('.tjobs-modal__cta');
 
         if (prevBtn) {
-            prevBtn.style.display = isFirst ? 'none' : 'inline-flex';
+            prevBtn.style.visibility = isFirst ? 'hidden' : 'visible';
             prevBtn.disabled = isFirst;
         }
 
@@ -614,6 +645,7 @@
                 // Viimeisellä askeleella: Next muuttuu Apply-CTA:ksi
                 const applyText = i18n['modal.cta_apply'] || 'Siirry hakemaan →';
                 nextBtn.textContent = applyText;
+                nextBtn.setAttribute('aria-label', applyText);
                 nextBtn.classList.add('is-apply', 'tjobs-cta-button');
                 nextBtn.setAttribute('data-apply-href', applyUrl || wizardApplyUrl || '');
             } else {
@@ -621,6 +653,14 @@
                 nextBtn.textContent = nextText;
                 nextBtn.classList.remove('is-apply', 'tjobs-cta-button');
                 nextBtn.removeAttribute('data-apply-href');
+                // Aria-label: "Seuraava vaihe: [seuraavan vaiheen nimi]"
+                if (wizardCurrentIndex + 1 < wizardSteps.length) {
+                    const nextTabObj = configTabs.find(t => t.id === wizardSteps[wizardCurrentIndex + 1]) || {label: 'tab.' + wizardSteps[wizardCurrentIndex + 1]};
+                    const nextStepName = i18n[nextTabObj.label] || wizardSteps[wizardCurrentIndex + 1];
+                    nextBtn.setAttribute('aria-label', (i18n['wizard.next'] || 'Seuraava') + ': ' + nextStepName);
+                } else {
+                    nextBtn.setAttribute('aria-label', nextText);
+                }
             }
         }
 

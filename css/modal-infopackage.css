@@ -29,7 +29,9 @@
     max-width: 600px;
     background: #ffffff;
     box-shadow: -2px 0 16px rgba(0, 0, 0, 0.2);
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -39,7 +41,25 @@
 }
 
 .tjobs-modal__content {
-    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* === Modal Header (sticky top: close + lang + title + excerpt) === */
+.tjobs-modal__header {
+    flex-shrink: 0;
+    padding: 24px 24px 0;
+}
+
+/* === Scrollable content area === */
+.tjobs-modal__scroll-area {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 24px 24px;
 }
 
 /* === Top Bar === */
@@ -650,12 +670,15 @@
 @media (max-width: 600px) {
     .tjobs-modal-panel {
         max-width: 100%;
-        min-height: 100vh;
         height: 100dvh; /* Dynamic viewport height */
     }
 
-    .tjobs-modal__content {
-        padding: 16px;
+    .tjobs-modal__header {
+        padding: 16px 16px 0;
+    }
+
+    .tjobs-modal__scroll-area {
+        padding: 0 16px 16px;
     }
 
     .tjobs-modal__title {
@@ -702,14 +725,6 @@
     .tjobs-cta-button {
         font-size: 16px;
         padding: 14px 20px;
-    }
-
-    .tjobs-modal__cta {
-        position: sticky;
-        bottom: 0;
-        margin-top: 24px;
-        padding-top: 16px;
-        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
     }
 
     .tjobs-lightbox__prev,
@@ -980,120 +995,97 @@
 
 /* === Wizard / Progress bar === */
 
-/* Header area grouping progress bar + dots + counter */
-.tjobs-wizard-header {
-    margin-bottom: 24px;
+/* Compact progress area (sticky top, below header) */
+.tjobs-wizard-progress {
+    flex-shrink: 0;
+    padding: 10px 24px 12px;
+    border-bottom: 1px solid #f3f4f6;
 }
 
-/* Progress bar container */
+/* Progress bar ARIA container */
 .tjobs-progress {
-    margin-bottom: 12px;
+    /* contains dots row + track + label row */
 }
 
-.tjobs-progress__track {
-    height: 6px;
+/* Pip dots row */
+.tjobs-progress-dots {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+
+.tjobs-step-dot {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity .15s;
+    outline: none;
+}
+
+.tjobs-step-dot:focus-visible .tjobs-step-dot__pip {
+    box-shadow: 0 0 0 3px rgba(254, 224, 0, 0.7);
+}
+
+.tjobs-step-dot:disabled {
+    cursor: default;
+    opacity: 0.4;
+}
+
+/* Pip: small filled circle */
+.tjobs-step-dot__pip {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #e5e5e5;
+    transition: background .2s, width .2s, height .2s, box-shadow .2s;
+}
+
+/* Done: yellow */
+.tjobs-step-dot.is-done .tjobs-step-dot__pip {
+    background: #FEE000;
+}
+
+/* Active: yellow + slightly bigger + glow ring */
+.tjobs-step-dot.is-active .tjobs-step-dot__pip {
+    background: #FEE000;
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 0 0 4px rgba(255, 213, 0, 0.25);
+}
+
+/* Thin progress track */
+.tjobs-progress-track {
+    height: 5px;
     background: #e5e7eb;
     border-radius: 9999px;
     overflow: hidden;
 }
 
-.tjobs-progress__fill {
+.tjobs-progress-fill {
     height: 100%;
     background: #FEE000;
     border-radius: 9999px;
-    transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 0.35s ease;
     min-width: 0;
 }
 
-/* Step dots */
-.tjobs-step-dots {
+/* Label row: active step name (left) + counter (right) */
+.tjobs-progress-label {
     display: flex;
-    gap: 4px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
-    margin-bottom: 6px;
-}
-
-.tjobs-step-dot {
-    display: inline-flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
-    gap: 4px;
-    background: none;
-    border: none;
-    padding: 4px 8px;
-    cursor: pointer;
-    flex-shrink: 0;
-    transition: opacity .15s;
-    outline: none;
+    margin-top: 5px;
 }
 
-.tjobs-step-dot:focus-visible .tjobs-step-dot__circle {
-    box-shadow: 0 0 0 3px rgba(254, 224, 0, 0.6);
-}
-
-.tjobs-step-dot:disabled {
-    cursor: default;
-    opacity: 0.45;
-}
-
-.tjobs-step-dot__circle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    font-size: 13px;
-    font-weight: 700;
-    border: 2px solid #d1d5db;
-    background: #fff;
-    color: #6b7280;
-    transition: background .2s, border-color .2s, color .2s;
-}
-
-/* Pending (default) */
-.tjobs-step-dot .tjobs-step-dot__circle {
-    border-color: #d1d5db;
-    background: #fff;
-    color: #9ca3af;
-}
-
-/* Done */
-.tjobs-step-dot.is-done .tjobs-step-dot__circle {
-    border-color: #000;
-    background: #000;
-    color: #FEE000;
-}
-
-/* Active */
-.tjobs-step-dot.is-active .tjobs-step-dot__circle {
-    border-color: #FEE000;
-    background: #FEE000;
-    color: #000;
-    box-shadow: 0 2px 8px rgba(254, 224, 0, 0.5);
-}
-
-.tjobs-step-dot__label {
-    font-size: 11px;
-    font-weight: 500;
-    color: #6b7280;
-    white-space: nowrap;
-    max-width: 72px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-align: center;
-}
-
-.tjobs-step-dot.is-active .tjobs-step-dot__label {
+.tjobs-progress-step-name {
+    font-size: 12px;
+    font-weight: 600;
     color: #111827;
-    font-weight: 700;
-}
-
-.tjobs-step-dot.is-done .tjobs-step-dot__label {
-    color: #374151;
 }
 
 /* Step counter text */
@@ -1101,18 +1093,19 @@
     font-size: 12px;
     color: #9ca3af;
     font-weight: 500;
-    text-align: right;
 }
 
-/* === Wizard navigation (prev / next) === */
-.tjobs-wizard-nav {
+/* === Wizard sticky footer (prev / next / apply) === */
+.tjobs-wizard-footer {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
-    margin-top: 28px;
-    padding-top: 20px;
-    border-top: 1px solid #e5e7eb;
+    padding: 12px 24px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .tjobs-wizard-nav__prev,
@@ -1139,7 +1132,6 @@
     background: #f1f5f9;
     color: #374151;
     border-color: #e2e8f0;
-    margin-right: auto;
 }
 
 .tjobs-wizard-nav__prev:hover:not(:disabled) {
@@ -1179,18 +1171,24 @@
     border-color: #000 !important;
 }
 
-/* === Mobile: piilota step-labelit, näytä tiivis counter === */
+/* === Mobile: compact progress bar === */
 @media (max-width: 480px) {
-    .tjobs-step-dot__label {
-        display: none;
+    .tjobs-wizard-progress {
+        padding: 8px 16px 10px;
     }
-    .tjobs-step-dot__circle {
-        width: 24px;
-        height: 24px;
-        font-size: 11px;
+    .tjobs-step-dot__pip {
+        width: 10px;
+        height: 10px;
+    }
+    .tjobs-step-dot.is-active .tjobs-step-dot__pip {
+        width: 14px;
+        height: 14px;
     }
     .tjobs-step-dot {
-        padding: 4px 4px;
+        padding: 3px;
+    }
+    .tjobs-wizard-footer {
+        padding: 10px 16px;
     }
     .tjobs-wizard-nav__prev,
     .tjobs-wizard-nav__next {
