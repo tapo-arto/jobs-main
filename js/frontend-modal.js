@@ -515,7 +515,7 @@
 
         // Wizard navigointipainikkeet (näytetään kun vaiheita on enemmän kuin yksi)
         if (showTabs && wizardSteps.length > 1) {
-            const prevLabel = (i18n['wizard.prev'] || 'Edellinen') + '';
+            const prevLabel = i18n['wizard.prev'] || 'Edellinen';
             const nextLabel = (i18n['wizard.next'] || 'Seuraava') + ' →';
             html += '<div class="tjobs-wizard-nav">';
             // Edellinen-nappi (piilotettu ensimmäisellä askeleella)
@@ -696,13 +696,20 @@
         if (nextBtn) {
             nextBtn.addEventListener('click', function() {
                 if (this.classList.contains('is-apply')) {
-                    // Viimeinen askel → avaa apply URL
-                    const href = this.getAttribute('data-apply-href') || data.apply_url || wizardApplyUrl;
-                    if (href && /^https?:\/\//i.test(href)) {
-                        closeModal();
-                        if (!window.open(href, '_blank', 'noopener,noreferrer')) {
-                            window.location.href = href;
+                    // Viimeinen askel → avaa apply URL (validoitu URL API:lla)
+                    const rawHref = this.getAttribute('data-apply-href') || data.apply_url || wizardApplyUrl;
+                    try {
+                        const parsedUrl = new URL(String(rawHref));
+                        if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+                            return; // Hylkää javascript: ja muut protokollat
                         }
+                        const safeHref = parsedUrl.href;
+                        closeModal();
+                        if (!window.open(safeHref, '_blank', 'noopener,noreferrer')) {
+                            window.location.assign(safeHref);
+                        }
+                    } catch (e) {
+                        // Virheellinen URL – ei tehdä mitään
                     }
                 } else if (wizardCurrentIndex < wizardSteps.length - 1) {
                     wizardCurrentIndex++;

@@ -679,13 +679,14 @@ $last_updated = isset( $last_sync_stats['updated'] ) ? (int) $last_sync_stats['u
     .tjobs-toggle-slider {
         position: absolute; cursor: pointer; inset: 0;
         background: #cbd5e1; border-radius: 12px; transition: .2s;
+        border: 1px solid #9ca3af;
     }
     .tjobs-toggle-slider:before {
         position: absolute; content: ""; height: 18px; width: 18px;
         left: 3px; bottom: 3px;
         background: #fff; border-radius: 50%; transition: .2s;
     }
-    .tjobs-toggle-switch input:checked + .tjobs-toggle-slider { background: #FEE000; }
+    .tjobs-toggle-switch input:checked + .tjobs-toggle-slider { background: #FEE000; border-color: #b8a200; }
     .tjobs-toggle-switch input:checked + .tjobs-toggle-slider:before { transform: translateX(20px); }
     .tjobs-toggle-switch input:focus-visible + .tjobs-toggle-slider { box-shadow: 0 0 0 3px rgba(34,113,177,.3); }
     </style>
