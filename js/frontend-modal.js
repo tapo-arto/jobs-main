@@ -22,6 +22,13 @@
     let currentTab = 'announcement';
     let closeTimer = null;
 
+    // Wizard state
+    let wizardSteps = [];
+    let wizardCurrentIndex = 0;
+    let wizardVisited = new Set();
+    let wizardForceLinear = true;
+    let wizardApplyUrl = '';
+
     /**
      * Tarkista onko elementti yhä liitetty dokumenttiin (ei stale/detached viite).
      *
@@ -104,6 +111,12 @@
         currentLang = lang || (window.tjobsModalConfig ? window.tjobsModalConfig.lang : 'fi');
         currentApplyUrl = applyUrl || '';
         currentTab = 'announcement'; // Reset to first tab
+
+        // Reset wizard state
+        wizardSteps = [];
+        wizardCurrentIndex = 0;
+        wizardVisited = new Set([0]);
+        wizardApplyUrl = applyUrl || '';
 
         // Peruuta mahdollinen odottava sulkemis-timeout
         if (closeTimer) {
@@ -272,12 +285,44 @@
         const hasSections = pkg && pkg.sections && pkg.sections.length > 0;
         const showTabs = hasDescription || hasMedia || hasQuestions || hasSections;
 
-        // Set active tab: announcement if description exists, otherwise general
-        if (hasDescription) {
-            currentTab = 'announcement';
-        } else {
-            currentTab = 'general';
+        // Hae wizard-konfiguraatio
+        const config = window.tjobsModalConfig || {};
+        const configTabs = config.tabs && config.tabs.length
+            ? config.tabs
+            : [
+                {id: 'announcement', label: 'tab.announcement'},
+                {id: 'general',      label: 'tab.general'},
+                {id: 'videos',       label: 'tab.videos'},
+                {id: 'details',      label: 'tab.details'},
+                {id: 'questions',    label: 'tab.questions'}
+              ];
+
+        wizardForceLinear = config.forceLinear !== undefined ? !!config.forceLinear : true;
+        wizardApplyUrl = data.apply_url || currentApplyUrl || '';
+
+        // Sisällön saatavuus per välilehti
+        const contentAvailable = {
+            announcement: !!hasDescription,
+            general:      !!pkg,
+            videos:       !!hasMedia,
+            details:      !!hasSections,
+            questions:    !!hasQuestions
+        };
+
+        // Rakenna wizard-askeleet konfiguraation järjestyksessä, vain olemassa oleva sisältö
+        wizardSteps = configTabs
+            .map(t => t.id)
+            .filter(id => contentAvailable[id] !== undefined && contentAvailable[id]);
+
+        // Varmista, että vähintään yksi askel
+        if (wizardSteps.length === 0) {
+            wizardSteps = ['general'];
         }
+
+        // Aseta alkuaskel: ensimmäinen käytettävissä oleva vaihe
+        wizardCurrentIndex = 0;
+        wizardVisited = new Set([0]);
+        currentTab = wizardSteps[0] || 'announcement';
 
         let html = '';
 
@@ -311,36 +356,45 @@
             html += `<div class="tjobs-modal__excerpt">${escapeHtml(data.excerpt)}</div>`;
         }
 
-        // Tabit (jos tarvitaan)
-        if (showTabs) {
-            html += '<div class="tjobs-modal__tabs">';
+        // === WIZARD PROGRESS BAR ===
+        if (showTabs && wizardSteps.length > 0) {
+            const totalSteps = wizardSteps.length;
+            const pct = totalSteps > 1 ? Math.round((0 / (totalSteps - 1)) * 100) : 100;
 
-            // 1. Ilmoitus-välilehti (ensimmäinen, oletuksena aktiivinen)
-            if (hasDescription) {
-                html += `<button type="button" class="tjobs-tab-btn is-active" data-tab="announcement">${i18n['tab.announcement'] || 'Ilmoitus'}</button>`;
-            }
+            html += '<div class="tjobs-wizard-header">';
 
-            // 2. Yleistä-välilehti
-            if (pkg) {
-                html += `<button type="button" class="tjobs-tab-btn${!hasDescription ? ' is-active' : ''}" data-tab="general">${i18n['tab.general'] || 'Yleistä'}</button>`;
-            }
-
-            // 3. Media
-            if (hasMedia) {
-                html += `<button type="button" class="tjobs-tab-btn" data-tab="media">${i18n['tab.videos'] || 'Media'}</button>`;
-            }
-
-            // 4. Lisätiedot
-            if (hasSections) {
-                html += `<button type="button" class="tjobs-tab-btn" data-tab="details">${i18n['tab.details'] || 'Lisätiedot'}</button>`;
-            }
-
-            // 5. Kysymykset
-            if (hasQuestions) {
-                html += `<button type="button" class="tjobs-tab-btn" data-tab="questions">${i18n['tab.questions'] || 'Kysymykset'}</button>`;
-            }
-
+            // Progress bar
+            html += `<div class="tjobs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${i18n['wizard.step_of'] ? i18n['wizard.step_of'].replace('%1$d', 1).replace('%2$d', totalSteps) : '1 / ' + totalSteps}">`;
+            html += '<div class="tjobs-progress__track">';
+            html += `<div class="tjobs-progress__fill" style="width:${pct}%"></div>`;
             html += '</div>';
+            html += '</div>';
+
+            // Step dots
+            if (totalSteps > 1) {
+                html += '<div class="tjobs-step-dots" role="list">';
+                wizardSteps.forEach((stepId, idx) => {
+                    const tabObj = configTabs.find(t => t.id === stepId) || {label: 'tab.' + stepId};
+                    const stepLabel = i18n[tabObj.label] || stepId;
+                    const isActive = idx === 0;
+                    const dotClass = isActive ? 'tjobs-step-dot is-active' : 'tjobs-step-dot';
+                    const ariaCurrent = isActive ? ' aria-current="step"' : '';
+                    const disabled = (wizardForceLinear && !wizardVisited.has(idx)) ? ' disabled' : '';
+                    html += `<button type="button" class="${dotClass}" data-step-index="${idx}" aria-label="${escapeHtml(stepLabel)}"${ariaCurrent}${disabled} role="listitem">`;
+                    html += `<span class="tjobs-step-dot__circle" aria-hidden="true">${idx + 1}</span>`;
+                    html += `<span class="tjobs-step-dot__label">${escapeHtml(stepLabel)}</span>`;
+                    html += '</button>';
+                });
+                html += '</div>';
+            }
+
+            // Vaihe X / Y -teksti
+            const stepOfText = i18n['wizard.step_of']
+                ? i18n['wizard.step_of'].replace('%1$d', 1).replace('%2$d', totalSteps)
+                : `1 / ${totalSteps}`;
+            html += `<div class="tjobs-wizard-step-counter" aria-live="polite" aria-atomic="true">${escapeHtml(stepOfText)}</div>`;
+
+            html += '</div>'; // .tjobs-wizard-header
         }
 
         // Tab-sisältö: Ilmoitus (työpaikkailmoitus RSS:stä)
@@ -387,9 +441,9 @@
         }
         html += '</div>';
 
-        // Tab-sisältö: Media
+        // Tab-sisältö: Media (rekisteriavain: videos)
         if (hasMedia) {
-            html += `<div class="tjobs-tab-content" data-tab-content="media" style="display:none;">`;
+            html += `<div class="tjobs-tab-content" data-tab-content="videos" style="display:none;">`;
             
             // Video
             if (pkg.video_url && pkg.video_url.trim()) {
@@ -449,7 +503,8 @@
             html += '</div>';
         }
 
-        // CTA-nappi (sticky)
+        // CTA-nappi: renderWizardState hallinnoi näkyvyyttä wizard-tilassa;
+        // näytetään aina kun ei wizard-navigaatiota
         if (data.apply_url) {
             html += `<div class="tjobs-modal__cta">
                 <a href="${escapeHtml(data.apply_url)}" target="_blank" rel="noopener" class="tjobs-cta-button">
@@ -458,10 +513,135 @@
             </div>`;
         }
 
+        // Wizard navigointipainikkeet (näytetään kun vaiheita on enemmän kuin yksi)
+        if (showTabs && wizardSteps.length > 1) {
+            const prevLabel = i18n['wizard.prev'] || 'Edellinen';
+            const nextLabel = (i18n['wizard.next'] || 'Seuraava') + ' →';
+            html += '<div class="tjobs-wizard-nav">';
+            // Edellinen-nappi (piilotettu ensimmäisellä askeleella)
+            html += `<button type="button" class="tjobs-wizard-nav__prev" style="display:none;" aria-label="${escapeHtml(prevLabel)}">← ${escapeHtml(prevLabel)}</button>`;
+            // Seuraava-nappi
+            html += `<button type="button" class="tjobs-wizard-nav__next" aria-label="${escapeHtml(nextLabel)}">${escapeHtml(nextLabel)}</button>`;
+            html += '</div>';
+        }
+
         content.innerHTML = html;
+
+        // Aktivoi ensimmäinen askel
+        if (showTabs && wizardSteps.length > 0) {
+            renderWizardState(content, data.apply_url);
+        }
 
         // Event listenerit
         attachEventListeners(data);
+    }
+
+    /**
+     * Renderöi wizard-tila: päivitä progress bar, step dots, sisältö ja navigointipainikkeet.
+     */
+    function renderWizardState(contentEl, applyUrl) {
+        if (!contentEl) {
+            contentEl = modalElement && modalElement.querySelector('.tjobs-modal__content');
+        }
+        if (!contentEl || wizardSteps.length === 0) { return; }
+
+        const totalSteps = wizardSteps.length;
+        const pct = totalSteps > 1 ? Math.round((wizardCurrentIndex / (totalSteps - 1)) * 100) : 100;
+        const isFirst = wizardCurrentIndex === 0;
+        const isLast  = wizardCurrentIndex === totalSteps - 1;
+
+        // Progress bar
+        const progressBar  = contentEl.querySelector('.tjobs-progress');
+        const progressFill = contentEl.querySelector('.tjobs-progress__fill');
+        if (progressBar) {
+            progressBar.setAttribute('aria-valuenow', pct);
+            const stepOfText = i18n['wizard.step_of']
+                ? i18n['wizard.step_of'].replace('%1$d', wizardCurrentIndex + 1).replace('%2$d', totalSteps)
+                : `${wizardCurrentIndex + 1} / ${totalSteps}`;
+            progressBar.setAttribute('aria-label', stepOfText);
+        }
+        if (progressFill) {
+            progressFill.style.width = pct + '%';
+        }
+
+        // Step dots
+        const dots = contentEl.querySelectorAll('.tjobs-step-dot');
+        dots.forEach(function(dot, idx) {
+            dot.classList.remove('is-active', 'is-done');
+            dot.removeAttribute('aria-current');
+            if (idx < wizardCurrentIndex) {
+                dot.classList.add('is-done');
+            } else if (idx === wizardCurrentIndex) {
+                dot.classList.add('is-active');
+                dot.setAttribute('aria-current', 'step');
+            }
+            if (wizardForceLinear) {
+                dot.disabled = !wizardVisited.has(idx);
+            } else {
+                dot.disabled = false;
+            }
+        });
+
+        // Vaihe X / Y -teksti
+        const counter = contentEl.querySelector('.tjobs-wizard-step-counter');
+        if (counter) {
+            const stepOfText = i18n['wizard.step_of']
+                ? i18n['wizard.step_of'].replace('%1$d', wizardCurrentIndex + 1).replace('%2$d', totalSteps)
+                : `${wizardCurrentIndex + 1} / ${totalSteps}`;
+            counter.textContent = stepOfText;
+        }
+
+        // Näytä aktiivinen tab-sisältö
+        const tabContents = contentEl.querySelectorAll('.tjobs-tab-content');
+        tabContents.forEach(function(tc) {
+            const tabId = tc.getAttribute('data-tab-content');
+            tc.style.display = (tabId === wizardSteps[wizardCurrentIndex]) ? 'block' : 'none';
+        });
+        currentTab = wizardSteps[wizardCurrentIndex];
+
+        // Navigointipainikkeet
+        const prevBtn = contentEl.querySelector('.tjobs-wizard-nav__prev');
+        const nextBtn = contentEl.querySelector('.tjobs-wizard-nav__next');
+        const ctaSection = contentEl.querySelector('.tjobs-modal__cta');
+
+        if (prevBtn) {
+            prevBtn.style.display = isFirst ? 'none' : 'inline-flex';
+            prevBtn.disabled = isFirst;
+        }
+
+        if (nextBtn) {
+            if (wizardForceLinear && isLast) {
+                // Viimeisellä askeleella: Next muuttuu Apply-CTA:ksi
+                const applyText = i18n['modal.cta_apply'] || 'Siirry hakemaan →';
+                nextBtn.textContent = applyText;
+                nextBtn.classList.add('is-apply', 'tjobs-cta-button');
+                nextBtn.setAttribute('data-apply-href', applyUrl || wizardApplyUrl || '');
+            } else {
+                const nextText = (i18n['wizard.next'] || 'Seuraava') + ' →';
+                nextBtn.textContent = nextText;
+                nextBtn.classList.remove('is-apply', 'tjobs-cta-button');
+                nextBtn.removeAttribute('data-apply-href');
+            }
+        }
+
+        // CTA-osio: forceLinear=true ja useita vaiheita → piilotettu (Apply on Next-napilla);
+        // muussa tapauksessa aina näkyvissä (yksittäinen vaihe tai vapaa selailu)
+        if (ctaSection) {
+            const hasWizardNav = wizardSteps.length > 1;
+            const showCta = !wizardForceLinear || !hasWizardNav;
+            ctaSection.style.display = showCta ? 'block' : 'none';
+        }
+
+        // Focus management: siirrä fokus aktiivisen vaiheen otsikkoon
+        const activeContent = contentEl.querySelector(`.tjobs-tab-content[data-tab-content="${wizardSteps[wizardCurrentIndex]}"]`);
+        if (activeContent) {
+            const heading = activeContent.querySelector('h2, h3');
+            const focusTarget = heading || activeContent;
+            if (focusTarget) {
+                focusTarget.setAttribute('tabindex', '-1');
+                focusTarget.focus({ preventScroll: false });
+            }
+        }
     }
 
     /**
@@ -487,14 +667,57 @@
             });
         });
 
-        // Tab-napit
-        const tabButtons = content.querySelectorAll('.tjobs-tab-btn');
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const targetTab = this.getAttribute('data-tab');
-                switchTab(targetTab);
+        // Wizard: step dots klikkaus
+        const stepDots = content.querySelectorAll('.tjobs-step-dot');
+        stepDots.forEach(function(dot) {
+            dot.addEventListener('click', function() {
+                const idx = parseInt(this.getAttribute('data-step-index'), 10);
+                if (isNaN(idx)) { return; }
+                if (wizardForceLinear && !wizardVisited.has(idx)) { return; }
+                wizardCurrentIndex = idx;
+                wizardVisited.add(idx);
+                renderWizardState(content, data.apply_url);
             });
         });
+
+        // Wizard: Edellinen-nappi
+        const prevBtn = content.querySelector('.tjobs-wizard-nav__prev');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                if (wizardCurrentIndex > 0) {
+                    wizardCurrentIndex--;
+                    renderWizardState(content, data.apply_url);
+                }
+            });
+        }
+
+        // Wizard: Seuraava / Apply -nappi
+        const nextBtn = content.querySelector('.tjobs-wizard-nav__next');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                if (this.classList.contains('is-apply')) {
+                    // Viimeinen askel → avaa apply URL (validoitu URL API:lla)
+                    const rawHref = this.getAttribute('data-apply-href') || data.apply_url || wizardApplyUrl;
+                    try {
+                        const parsedUrl = new URL(String(rawHref));
+                        if (parsedUrl.protocol !== 'https:' && parsedUrl.protocol !== 'http:') {
+                            return; // Hylkää javascript: ja muut protokollat
+                        }
+                        const safeHref = parsedUrl.href;
+                        closeModal();
+                        if (!window.open(safeHref, '_blank', 'noopener,noreferrer')) {
+                            window.location.assign(safeHref);
+                        }
+                    } catch (e) {
+                        // Virheellinen URL – ei tehdä mitään
+                    }
+                } else if (wizardCurrentIndex < wizardSteps.length - 1) {
+                    wizardCurrentIndex++;
+                    wizardVisited.add(wizardCurrentIndex);
+                    renderWizardState(content, data.apply_url);
+                }
+            });
+        }
 
         // Galleria-kuvien klikkaukset (lightbox)
         const galleryItems = content.querySelectorAll('.tjobs-gallery-item');

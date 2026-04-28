@@ -2,6 +2,19 @@
 
 Kaikki merkittävät muutokset dokumentoidaan tähän tiedostoon.
 
+## [4.2.0] - 2026-04-28
+
+### Lisätty
+- **Wizard / Progress bar** modaalin välilehdille (`js/frontend-modal.js`): vaiheittainen eteneminen, joka pakottaa hakijan käymään koko sisällön läpi ennen "Apply"-CTA:n näyttämistä.
+- **Tab-rekisteri** (`includes/tabs-registry.php`): yksi totuuden lähde modaalin vaiheille `tjobs_tab_registry`-filtterillä.
+- **Dynaaminen järjestys ylläpidossa** (`includes/admin-settings.php`): drag & drop -järjestys ja enable/disable per vaihe (`jQuery UI Sortable`). Tallennus `tjobs_tab_order` ja `tjobs_tab_enabled` -optioihin.
+- **Pakotettu eteneminen** -asetus `tjobs_force_linear` (oletus: päällä).
+- Saavutettavuus: `role="progressbar"`, `aria-current="step"`, focus management.
+- Uudet i18n-avaimet `wizard.*`.
+
+### Muutettu
+- Plugin-headerin `Version` päivitetty `4.2.0`:ksi.
+
 ## [3.0.0] - 2026-02-20
 
 ### Lisätty

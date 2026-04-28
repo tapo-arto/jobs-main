@@ -41,9 +41,11 @@ if ( file_exists( $js_path ) ) {
         'tjobs-modal-js',
         'tjobsModalConfig',
         array(
-            'restUrl' => esc_url_raw( rest_url( 'tjobs/v1' ) ),
-            'lang'    => $lang,
-            'i18n'    => $i18n,
+            'restUrl'     => esc_url_raw( rest_url( 'tjobs/v1' ) ),
+            'lang'        => $lang,
+            'i18n'        => $i18n,
+            'tabs'        => function_exists( 'tjobs_get_tab_registry' ) ? array_values( tjobs_get_tab_registry() ) : array(),
+            'forceLinear' => (bool) get_option( 'tjobs_force_linear', true ),
         )
     );
 }

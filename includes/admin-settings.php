@@ -57,6 +57,54 @@ if ( ! is_array( $import_log ) ) {
 // 1 = näytä vain lisäykset/poistot/virheet, 0 tai puuttuu = näytä kaikki
 $only_changes = isset( $_GET['only_changes'] ) ? (int) $_GET['only_changes'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
+// Tallenna wizard-asetukset
+if ( isset( $_POST['tjobs_save_wizard_settings'] ) ) {
+    check_admin_referer( 'tjobs_settings_nonce' );
+
+    // Whitelist-validointi: hyväksy vain rekisteröidyt avaimet
+    $valid_tab_keys = function_exists( 'tjobs_get_tab_registry' )
+        ? array_keys( array( 'announcement' => 1, 'general' => 1, 'videos' => 1, 'details' => 1, 'questions' => 1 ) )
+        : array( 'announcement', 'general', 'videos', 'details', 'questions' );
+
+    // Pakollisia välilehtiä ei voi poistaa
+    $required_tabs = array( 'announcement', 'questions' );
+
+    // Tallenna järjestys
+    $raw_order = isset( $_POST['tjobs_tab_order'] ) && is_array( $_POST['tjobs_tab_order'] )
+        ? array_map( 'sanitize_key', wp_unslash( $_POST['tjobs_tab_order'] ) )
+        : $valid_tab_keys;
+    $clean_order = array_values( array_unique( array_filter(
+        $raw_order,
+        function( $k ) use ( $valid_tab_keys ) { return in_array( $k, $valid_tab_keys, true ); }
+    ) ) );
+    // Lisää järjestyksen loppuun mahdolliset puuttuvat avaimet
+    foreach ( $valid_tab_keys as $k ) {
+        if ( ! in_array( $k, $clean_order, true ) ) {
+            $clean_order[] = $k;
+        }
+    }
+    update_option( 'tjobs_tab_order', $clean_order );
+
+    // Tallenna käytössä olevat välilehdet (pakolliset aina mukana)
+    $raw_enabled = isset( $_POST['tjobs_tab_enabled'] ) && is_array( $_POST['tjobs_tab_enabled'] )
+        ? array_map( 'sanitize_key', wp_unslash( $_POST['tjobs_tab_enabled'] ) )
+        : array();
+    $clean_enabled = array_values( array_unique( array_merge(
+        $required_tabs,
+        array_filter( $raw_enabled, function( $k ) use ( $valid_tab_keys ) { return in_array( $k, $valid_tab_keys, true ); } )
+    ) ) );
+    update_option( 'tjobs_tab_enabled', $clean_enabled );
+
+    // Tallenna pakota-lineaarinen -asetus
+    $force_linear = ! empty( $_POST['tjobs_force_linear'] ) ? 1 : 0;
+    update_option( 'tjobs_force_linear', $force_linear );
+
+    // Cache bump jotta frontend lataa tuoreen konfiguraation
+    update_option( 'tjobs_cache_bump', (int) get_option( 'tjobs_cache_bump', 0 ) + 1 );
+
+    echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Wizard-asetukset tallennettu!', 'tapojarvijobs' ) . '</p></div>';
+}
+
 // Pakota tuonti
 if ( isset( $_POST['tjobs_force_import'] ) ) {
     check_admin_referer( 'tjobs_settings_nonce' );
@@ -291,7 +339,7 @@ $last_updated = isset( $last_sync_stats['updated'] ) ? (int) $last_sync_stats['u
     <div class="tjobs-header">
         <span class="dashicons dashicons-businessman"></span>
         <h1>Jobs V2</h1>
-        <span class="tjobs-version">v4.0 V2</span>
+        <span class="tjobs-version">v4.2.0</span>
     </div>
 
     <!-- Status chips -->
@@ -330,6 +378,11 @@ $last_updated = isset( $last_sync_stats['updated'] ) ? (int) $last_sync_stats['u
            class="tjobs-tab <?php echo $active_tab === 'settings' ? 'is-active' : ''; ?>">
             <span class="dashicons dashicons-admin-settings"></span>
             <?php esc_html_e( 'Asetukset', 'tapojarvijobs' ); ?>
+        </a>
+        <a href="<?php echo esc_url( add_query_arg( 'tab', 'wizard', $tab_base ) ); ?>"
+           class="tjobs-tab <?php echo $active_tab === 'wizard' ? 'is-active' : ''; ?>">
+            <span class="dashicons dashicons-editor-ol"></span>
+            <?php esc_html_e( 'Wizard', 'tapojarvijobs' ); ?>
         </a>
         <a href="<?php echo esc_url( add_query_arg( 'tab', 'log', $tab_base ) ); ?>"
            class="tjobs-tab <?php echo $active_tab === 'log' ? 'is-active' : ''; ?>">
@@ -597,6 +650,133 @@ $last_updated = isset( $last_sync_stats['updated'] ) ? (int) $last_sync_stats['u
     </div>
     <?php endif; ?>
 
+    <?php elseif ( $active_tab === 'wizard' ) : ?>
+    <!-- ═════════ TAB: WIZARD ═════════ -->
+    <style>
+    .tjobs-sortable { list-style: none; margin: 0; padding: 0; }
+    .tjobs-sortable li {
+        display: flex; align-items: center; gap: 12px;
+        background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
+        padding: 12px 16px; margin-bottom: 8px; cursor: default;
+        transition: box-shadow .15s;
+    }
+    .tjobs-sortable li.ui-sortable-helper { box-shadow: 0 8px 24px rgba(0,0,0,.15); }
+    .tjobs-sortable .drag-handle {
+        cursor: grab; color: #94a3b8; font-size: 18px;
+        width: 18px; height: 18px;
+    }
+    .tjobs-sortable .drag-handle:active { cursor: grabbing; }
+    .tjobs-sortable .step-label { flex: 1; font-size: 13px; font-weight: 600; color: #1e293b; }
+    .tjobs-sortable .step-required {
+        font-size: 11px; font-weight: 500; color: #6b7280;
+        background: #f1f5f9; border-radius: 9999px; padding: 2px 8px;
+    }
+    .tjobs-wizard-toggle { display: flex; align-items: center; gap: 10px; }
+    .tjobs-toggle-switch {
+        position: relative; display: inline-block; width: 44px; height: 24px;
+    }
+    .tjobs-toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .tjobs-toggle-slider {
+        position: absolute; cursor: pointer; inset: 0;
+        background: #cbd5e1; border-radius: 12px; transition: .2s;
+        border: 1px solid #9ca3af;
+    }
+    .tjobs-toggle-slider:before {
+        position: absolute; content: ""; height: 18px; width: 18px;
+        left: 3px; bottom: 3px;
+        background: #fff; border-radius: 50%; transition: .2s;
+    }
+    .tjobs-toggle-switch input:checked + .tjobs-toggle-slider { background: #FEE000; border-color: #b8a200; }
+    .tjobs-toggle-switch input:checked + .tjobs-toggle-slider:before { transform: translateX(20px); }
+    .tjobs-toggle-switch input:focus-visible + .tjobs-toggle-slider { box-shadow: 0 0 0 3px rgba(34,113,177,.3); }
+    </style>
+
+    <form method="post">
+        <?php wp_nonce_field( 'tjobs_settings_nonce' ); ?>
+
+        <!-- Pakota vaiheittainen eteneminen -->
+        <div class="tjobs-card">
+            <h3><?php esc_html_e( 'Etenemisasetus', 'tapojarvijobs' ); ?></h3>
+            <div class="tjobs-field-row">
+                <label class="tjobs-field-label">
+                    <?php esc_html_e( 'Pakota vaiheittainen eteneminen', 'tapojarvijobs' ); ?>
+                    <span class="desc"><?php esc_html_e( 'Hakija käy välilehdet läpi järjestyksessä ennen Apply-painiketta', 'tapojarvijobs' ); ?></span>
+                </label>
+                <div class="tjobs-wizard-toggle">
+                    <label class="tjobs-toggle-switch">
+                        <input type="checkbox" name="tjobs_force_linear" value="1"
+                               <?php checked( (bool) get_option( 'tjobs_force_linear', true ) ); ?>>
+                        <span class="tjobs-toggle-slider"></span>
+                    </label>
+                    <span style="font-size:13px;color:#374151;"><?php esc_html_e( 'Päällä', 'tapojarvijobs' ); ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vaiheiden järjestys -->
+        <div class="tjobs-card">
+            <h3><?php esc_html_e( 'Modaalin vaiheiden järjestys', 'tapojarvijobs' ); ?></h3>
+            <p class="description" style="margin:0 0 16px;font-size:13px;color:#64748b;">
+                <?php esc_html_e( 'Vedä ja pudota järjestääksesi vaiheet. Poista valinta piilottaaksesi vaiheen frontendistä.', 'tapojarvijobs' ); ?>
+            </p>
+
+            <?php
+            $all_registry  = array(
+                'announcement' => array( 'label' => 'tab.announcement', 'required' => true ),
+                'general'      => array( 'label' => 'tab.general',      'required' => false ),
+                'videos'       => array( 'label' => 'tab.videos',       'required' => false ),
+                'details'      => array( 'label' => 'tab.details',      'required' => false ),
+                'questions'    => array( 'label' => 'tab.questions',    'required' => true ),
+            );
+            $current_order   = get_option( 'tjobs_tab_order', array_keys( $all_registry ) );
+            $current_enabled = get_option( 'tjobs_tab_enabled', array_keys( $all_registry ) );
+
+            // Whitelist + merge missing keys to end
+            $valid_keys = array_keys( $all_registry );
+            $current_order = array_values( array_unique( array_filter(
+                array_merge(
+                    array_filter( (array) $current_order, function( $k ) use ( $valid_keys ) { return in_array( $k, $valid_keys, true ); } ),
+                    $valid_keys
+                )
+            ) ) );
+            ?>
+
+            <ul id="tjobs-tab-sortable" class="tjobs-sortable">
+            <?php foreach ( $current_order as $key ) :
+                if ( ! isset( $all_registry[ $key ] ) ) { continue; }
+                $tab      = $all_registry[ $key ];
+                $is_req   = ! empty( $tab['required'] );
+                $is_enabled = in_array( $key, (array) $current_enabled, true ) || $is_req;
+                $label    = function_exists( 'tjobs_i18n' ) ? tjobs_i18n( $tab['label'] ) : $key;
+            ?>
+                <li data-key="<?php echo esc_attr( $key ); ?>">
+                    <span class="drag-handle dashicons dashicons-menu" aria-hidden="true"></span>
+                    <label style="display:flex;align-items:center;gap:8px;flex:1;cursor:<?php echo $is_req ? 'default' : 'pointer'; ?>;">
+                        <input type="checkbox"
+                               name="tjobs_tab_enabled[]"
+                               value="<?php echo esc_attr( $key ); ?>"
+                               <?php checked( $is_enabled ); ?>
+                               <?php disabled( $is_req ); ?>>
+                        <span class="step-label"><?php echo esc_html( $label ); ?></span>
+                    </label>
+                    <?php if ( $is_req ) : ?>
+                        <span class="step-required"><?php esc_html_e( 'pakollinen', 'tapojarvijobs' ); ?></span>
+                    <?php endif; ?>
+                    <input type="hidden" name="tjobs_tab_order[]" value="<?php echo esc_attr( $key ); ?>">
+                </li>
+            <?php endforeach; ?>
+            </ul>
+        </div>
+
+        <!-- Action bar -->
+        <div class="tjobs-actions">
+            <button type="submit" name="tjobs_save_wizard_settings" class="tjobs-btn tjobs-btn-primary">
+                <span class="dashicons dashicons-saved"></span>
+                <?php esc_html_e( 'Tallenna wizard-asetukset', 'tapojarvijobs' ); ?>
+            </button>
+        </div>
+    </form>
+
     <?php elseif ( $active_tab === 'help' ) : ?>
     <!-- ═════════ TAB: OHJEET ═════════ -->
     <h3 style="margin-top:0;font-size:14px;color:#1e293b;"><?php esc_html_e( 'Lyhytkoodit', 'tapojarvijobs' ); ?></h3>
@@ -638,6 +818,22 @@ $last_updated = isset( $last_sync_stats['updated'] ) ? (int) $last_sync_stats['u
 
 <script>
 (function(){
+    // Sortable wizard steps
+    (function($){
+        var list = $('#tjobs-tab-sortable');
+        if (list.length && $.fn.sortable) {
+            list.sortable({
+                handle: '.drag-handle',
+                axis: 'y',
+                update: function() {
+                    list.find('> li').each(function(i, el) {
+                        $(el).find('input[name="tjobs_tab_order[]"]').val($(el).data('key'));
+                    });
+                }
+            });
+        }
+    })(jQuery);
+
     // Frequency chip selector
     var chips  = document.querySelectorAll('#tjobs-freq-chips .tjobs-chip');
     var hidden = document.getElementById('update_frequency');

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Tapojärvi Jobs Infopaketit (V2)
  * Description: Tapojärvi Jobs Infopaketit – erillinen lisäosa RSS-synkronointiin, infopaketteihin, REST API:hin, Gutenberg-blokkiin ja Schema.org-merkintöihin.
- * Version: 4.1.7
+ * Version: 4.2.0
  * Author: Arto Huhta
  * Text Domain: tapojarvijobs
  * Requires at least: 5.8
@@ -25,6 +25,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/security-improvements.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/health-check.php';
 // Infopaketti-toiminto: i18n täytyy ladata ennen muita uusia tiedostoja
 require_once plugin_dir_path( __FILE__ ) . 'includes/i18n-strings.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/tabs-registry.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/cpt-infopackage.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/automation-rules.php';
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -56,6 +57,11 @@ function tjobs_register_admin_assets( $hook ) {
     // Ladataan adminin CSS/JS vain, jos ollaan pluginin asetussivulla
     $screen = get_current_screen();
     if ( 'toplevel_page_tjobs-v2-settings' === $hook || ( $screen && 'tjobs_infopackage' === $screen->post_type ) ) {
+        // Sortable for wizard tab ordering
+        if ( 'toplevel_page_tjobs-v2-settings' === $hook ) {
+            wp_enqueue_script( 'jquery-ui-sortable' );
+        }
+
         // Admin-CSS
         $admin_css = plugin_dir_path(__FILE__) . 'css/admin-minun-aggregator-plugin.css';
         if ( file_exists( $admin_css ) ) {

@@ -180,6 +180,32 @@ return array(
         'it' => 'Offerte di lavoro – anteprima. L\'elenco sarà visualizzato normalmente alla pubblicazione.',
     ),
 
+    // Wizard navigation
+    'wizard.next' => array(
+        'fi' => 'Seuraava',
+        'en' => 'Next',
+        'sv' => 'Nästa',
+        'it' => 'Avanti',
+    ),
+    'wizard.prev' => array(
+        'fi' => 'Edellinen',
+        'en' => 'Previous',
+        'sv' => 'Föregående',
+        'it' => 'Precedente',
+    ),
+    'wizard.step_of' => array(
+        'fi' => 'Vaihe %1$d / %2$d',
+        'en' => 'Step %1$d of %2$d',
+        'sv' => 'Steg %1$d / %2$d',
+        'it' => 'Passaggio %1$d / %2$d',
+    ),
+    'wizard.complete' => array(
+        'fi' => 'Valmis',
+        'en' => 'Done',
+        'sv' => 'Klar',
+        'it' => 'Fatto',
+    ),
+
     // Admin
     'admin.language_version' => array(
         'fi' => 'Kieliversio',
