@@ -2,6 +2,16 @@
 
 Kaikki merkittävät muutokset dokumentoidaan tähän tiedostoon.
 
+## [4.2.2] - 2026-04-28
+
+### Korjattu
+- **Wizard-stepperin ulkoasu** (`js/frontend-modal.js`, CSS):
+  - Pisteet ovat nyt aitoja ympyröitä (eivät kulmikkaita neliöitä) – `appearance: none; border-radius: 50%` pakotettuna.
+  - Vaiheiden nimet näkyvät kaikille vaiheille pisteen alla, eivät vain aktiiviselle.
+  - Yhtenäinen progress-palkki kulkee pisteiden takana `::before`/`::after`-pseudoelementeillä; täyttö animoituu CSS-muuttujalla `--tjobs-progress`.
+  - Rakenne muutettu `<ol class="tjobs-stepper">` + `<li class="tjobs-stepper-item">` -ratkaisuun (ei enää erillistä `.tjobs-progress-dots`/`.tjobs-progress-track` -rakennetta).
+- Plugin-headerin `Version` päivitetty `4.2.2`:ksi.
+
 ## [4.2.1] - 2026-04-28
 
 ### Muutettu

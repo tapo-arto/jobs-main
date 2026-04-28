@@ -361,44 +361,36 @@
 
         html += '</div>'; // .tjobs-modal__header
 
-        // === WIZARD PROGRESS BAR (compact: pip dots + thin track + label) ===
+        // === WIZARD STEPPER (dots + labels per step + connecting line) ===
         if (showTabs && wizardSteps.length > 0) {
             const totalSteps = wizardSteps.length;
             const pctFill = Math.round(((wizardCurrentIndex + 1) / totalSteps) * 100);
             const stepOfText = i18n['wizard.step_of']
                 ? i18n['wizard.step_of'].replace('%1$d', 1).replace('%2$d', totalSteps)
                 : `1 / ${totalSteps}`;
-            const firstTabObj = configTabs.find(t => t.id === wizardSteps[0]) || {label: 'tab.' + wizardSteps[0]};
-            const firstStepName = i18n[firstTabObj.label] || wizardSteps[0];
+            const progressPct = totalSteps > 1 ? 0 : 100;
 
             html += '<div class="tjobs-wizard-progress">';
             html += `<div class="tjobs-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pctFill}" aria-label="${escapeHtml(stepOfText)}">`;
 
-            // Pip dots (small circles per step)
-            if (totalSteps > 1) {
-                html += '<div class="tjobs-progress-dots">';
-                wizardSteps.forEach((stepId, idx) => {
-                    const tabObj = configTabs.find(t => t.id === stepId) || {label: 'tab.' + stepId};
-                    const stepLabel = i18n[tabObj.label] || stepId;
-                    const isActive = idx === 0;
-                    const dotClass = isActive ? 'tjobs-step-dot is-active' : 'tjobs-step-dot';
-                    const ariaCurrent = isActive ? ' aria-current="step"' : '';
-                    const disabled = (wizardForceLinear && !wizardVisited.has(idx)) ? ' disabled' : '';
-                    html += `<button type="button" class="${dotClass}" data-step-index="${idx}" aria-label="${escapeHtml(stepLabel)}"${ariaCurrent}${disabled}>`;
-                    html += '<span class="tjobs-step-dot__pip" aria-hidden="true"></span>';
-                    html += '</button>';
-                });
-                html += '</div>'; // .tjobs-progress-dots
-            }
+            // Stepper: one <li> per step, each has a dot button + label below
+            html += `<ol class="tjobs-stepper" style="--tjobs-progress:${progressPct}%">`;
+            wizardSteps.forEach((stepId, idx) => {
+                const tabObj = configTabs.find(t => t.id === stepId) || {label: 'tab.' + stepId};
+                const stepLabel = i18n[tabObj.label] || stepId;
+                const isActive = idx === 0;
+                const itemClass = isActive ? 'tjobs-stepper-item is-active' : 'tjobs-stepper-item';
+                const ariaCurrent = isActive ? ' aria-current="step"' : '';
+                const disabled = (wizardForceLinear && !wizardVisited.has(idx)) ? ' disabled' : '';
+                html += `<li class="${itemClass}"${ariaCurrent}>`;
+                html += `<button type="button" class="tjobs-step-dot" data-step-index="${idx}" aria-label="${escapeHtml(stepLabel)}"${disabled}></button>`;
+                html += `<span class="tjobs-step-label" aria-hidden="true">${escapeHtml(stepLabel)}</span>`;
+                html += '</li>';
+            });
+            html += '</ol>'; // .tjobs-stepper
 
-            // Thin progress track + animated fill
-            html += '<div class="tjobs-progress-track">';
-            html += `<div class="tjobs-progress-fill" style="width:${pctFill}%"></div>`;
-            html += '</div>';
-
-            // Active step name + step counter
+            // Small step counter (right-aligned)
             html += '<div class="tjobs-progress-label">';
-            html += `<span class="tjobs-progress-step-name">${escapeHtml(firstStepName)}</span>`;
             html += `<span class="tjobs-wizard-step-counter" aria-live="polite" aria-atomic="true">${escapeHtml(stepOfText)}</span>`;
             html += '</div>';
 
@@ -575,51 +567,46 @@
         const isFirst = wizardCurrentIndex === 0;
         const isLast  = wizardCurrentIndex === totalSteps - 1;
 
-        // Progress bar
-        const progressBar  = contentEl.querySelector('.tjobs-progress');
-        const progressFill = contentEl.querySelector('.tjobs-progress-fill');
+        // Progress bar ARIA
+        const stepOfText = i18n['wizard.step_of']
+            ? i18n['wizard.step_of'].replace('%1$d', wizardCurrentIndex + 1).replace('%2$d', totalSteps)
+            : `${wizardCurrentIndex + 1} / ${totalSteps}`;
+        const progressBar = contentEl.querySelector('.tjobs-progress');
         if (progressBar) {
             progressBar.setAttribute('aria-valuenow', pct);
-            const stepOfText = i18n['wizard.step_of']
-                ? i18n['wizard.step_of'].replace('%1$d', wizardCurrentIndex + 1).replace('%2$d', totalSteps)
-                : `${wizardCurrentIndex + 1} / ${totalSteps}`;
             progressBar.setAttribute('aria-label', stepOfText);
         }
-        if (progressFill) {
-            progressFill.style.width = pct + '%';
+
+        // Stepper: update CSS variable for fill line
+        const stepperEl = contentEl.querySelector('.tjobs-stepper');
+        if (stepperEl) {
+            const progressPct = totalSteps > 1
+                ? (wizardCurrentIndex / (totalSteps - 1)) * 100
+                : 100;
+            stepperEl.style.setProperty('--tjobs-progress', progressPct + '%');
         }
 
-        // Step dots
-        const dots = contentEl.querySelectorAll('.tjobs-step-dot');
-        dots.forEach(function(dot, idx) {
-            dot.classList.remove('is-active', 'is-done');
-            dot.removeAttribute('aria-current');
+        // Step items: update is-active/is-done classes, aria-current, and dot disabled state
+        const stepItems = contentEl.querySelectorAll('.tjobs-stepper-item');
+        stepItems.forEach(function(item, idx) {
+            item.classList.remove('is-active', 'is-done');
+            item.removeAttribute('aria-current');
             if (idx < wizardCurrentIndex) {
-                dot.classList.add('is-done');
+                item.classList.add('is-done');
             } else if (idx === wizardCurrentIndex) {
-                dot.classList.add('is-active');
-                dot.setAttribute('aria-current', 'step');
+                item.classList.add('is-active');
+                item.setAttribute('aria-current', 'step');
             }
-            if (wizardForceLinear) {
-                dot.disabled = !wizardVisited.has(idx);
-            } else {
-                dot.disabled = false;
+            const dot = item.querySelector('.tjobs-step-dot');
+            if (dot) {
+                dot.disabled = wizardForceLinear ? !wizardVisited.has(idx) : false;
             }
         });
 
-        // Vaihe X / Y -teksti + aktiivisen vaiheen nimi
+        // Vaihe X / Y -teksti
         const counter = contentEl.querySelector('.tjobs-wizard-step-counter');
         if (counter) {
-            const stepOfText = i18n['wizard.step_of']
-                ? i18n['wizard.step_of'].replace('%1$d', wizardCurrentIndex + 1).replace('%2$d', totalSteps)
-                : `${wizardCurrentIndex + 1} / ${totalSteps}`;
             counter.textContent = stepOfText;
-        }
-
-        const stepNameEl = contentEl.querySelector('.tjobs-progress-step-name');
-        if (stepNameEl) {
-            const currentTabObj = configTabs.find(t => t.id === wizardSteps[wizardCurrentIndex]) || {label: 'tab.' + wizardSteps[wizardCurrentIndex]};
-            stepNameEl.textContent = i18n[currentTabObj.label] || wizardSteps[wizardCurrentIndex];
         }
 
         // Näytä aktiivinen tab-sisältö

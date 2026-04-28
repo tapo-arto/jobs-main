@@ -998,101 +998,135 @@
 /* Compact progress area (sticky top, below header) */
 .tjobs-wizard-progress {
     flex-shrink: 0;
-    padding: 10px 24px 12px;
+    padding: 10px 24px 14px;
     border-bottom: 1px solid #f3f4f6;
 }
 
 /* Progress bar ARIA container */
 .tjobs-progress {
-    /* contains dots row + track + label row */
+    /* contains stepper + label row */
 }
 
-/* Pip dots row */
-.tjobs-progress-dots {
+/* ── Stepper (dots + labels + connecting line) ── */
+.tjobs-stepper {
+    list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 4px;
+    position: relative;
 }
 
-.tjobs-step-dot {
-    background: none;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: opacity .15s;
-    outline: none;
-}
-
-.tjobs-step-dot:focus-visible .tjobs-step-dot__pip {
-    box-shadow: 0 0 0 3px rgba(254, 224, 0, 0.7);
-}
-
-.tjobs-step-dot:disabled {
-    cursor: default;
-    opacity: 0.4;
-}
-
-/* Pip: small filled circle */
-.tjobs-step-dot__pip {
-    display: block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
+/* Gray track behind dots */
+.tjobs-stepper::before {
+    content: '';
+    position: absolute;
+    top: 7px; /* half of 14px dot */
+    left: 7px;
+    right: 7px;
+    height: 3px;
     background: #e5e5e5;
+    border-radius: 2px;
+    z-index: 0;
+}
+
+/* Yellow fill (animated via --tjobs-progress CSS variable) */
+.tjobs-stepper::after {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 7px;
+    height: 3px;
+    background: #FEE000;
+    border-radius: 2px;
+    width: var(--tjobs-progress, 0%);
+    transition: width .35s ease;
+    z-index: 1;
+}
+
+/* Each step: dot + label stacked vertically */
+.tjobs-stepper-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+/* Dot button – forced circle, no browser defaults */
+.tjobs-step-dot {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    padding: 0;
+    background: #e5e5e5;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px #d4d4d4;
+    cursor: pointer;
+    display: block;
+    flex-shrink: 0;
     transition: background .2s, width .2s, height .2s, box-shadow .2s;
 }
 
-/* Done: yellow */
-.tjobs-step-dot.is-done .tjobs-step-dot__pip {
-    background: #FEE000;
+.tjobs-step-dot:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 5px rgba(254, 224, 0, 0.7);
 }
 
-/* Active: yellow + slightly bigger + glow ring */
-.tjobs-step-dot.is-active .tjobs-step-dot__pip {
-    background: #FEE000;
-    width: 16px;
-    height: 16px;
-    box-shadow: 0 0 0 4px rgba(255, 213, 0, 0.25);
+.tjobs-step-dot:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
-/* Thin progress track */
-.tjobs-progress-track {
-    height: 5px;
-    background: #e5e7eb;
-    border-radius: 9999px;
+/* Done state */
+.tjobs-stepper-item.is-done .tjobs-step-dot {
+    background: #FEE000;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 3px #FEE000;
+}
+
+/* Active state – slightly larger with glow */
+.tjobs-stepper-item.is-active .tjobs-step-dot {
+    background: #FEE000;
+    width: 18px;
+    height: 18px;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(255, 213, 0, 0.5);
+}
+
+/* Step label (shown for ALL steps) */
+.tjobs-step-label {
+    margin-top: 6px;
+    font-size: 11px;
+    line-height: 1.2;
+    color: #9ca3af;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    text-align: center;
+    display: block;
 }
 
-.tjobs-progress-fill {
-    height: 100%;
-    background: #FEE000;
-    border-radius: 9999px;
-    transition: width 0.35s ease;
-    min-width: 0;
+.tjobs-stepper-item.is-done .tjobs-step-label {
+    color: #374151;
 }
 
-/* Label row: active step name (left) + counter (right) */
+.tjobs-stepper-item.is-active .tjobs-step-label {
+    color: #111827;
+    font-weight: 600;
+}
+
+/* Small step counter (right-aligned) */
 .tjobs-progress-label {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 5px;
+    justify-content: flex-end;
+    margin-top: 4px;
 }
 
-.tjobs-progress-step-name {
-    font-size: 12px;
-    font-weight: 600;
-    color: #111827;
-}
-
-/* Step counter text */
 .tjobs-wizard-step-counter {
-    font-size: 12px;
+    font-size: 11px;
     color: #9ca3af;
-    font-weight: 500;
 }
 
 /* === Wizard sticky footer (prev / next / apply) === */
@@ -1171,21 +1205,25 @@
     border-color: #000 !important;
 }
 
-/* === Mobile: compact progress bar === */
+/* === Mobile: compact stepper === */
 @media (max-width: 480px) {
     .tjobs-wizard-progress {
         padding: 8px 16px 10px;
     }
-    .tjobs-step-dot__pip {
+    .tjobs-step-dot {
         width: 10px;
         height: 10px;
     }
-    .tjobs-step-dot.is-active .tjobs-step-dot__pip {
+    .tjobs-stepper-item.is-active .tjobs-step-dot {
         width: 14px;
         height: 14px;
     }
-    .tjobs-step-dot {
-        padding: 3px;
+    .tjobs-stepper::before,
+    .tjobs-stepper::after {
+        top: 5px; /* half of 10px dot */
+    }
+    .tjobs-step-label {
+        font-size: 9px;
     }
     .tjobs-wizard-footer {
         padding: 10px 16px;
