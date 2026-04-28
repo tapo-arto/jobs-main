@@ -1,6 +1,6 @@
 <?php
 /**
- * PHPUnit-testit sync-funktioille.
+ * PHPUnit-testit sync-funktioille ja tab-rekisterille.
  *
  * @package TJobs_Plugin
  */
@@ -63,5 +63,116 @@ class Test_Sync_Functions extends WP_UnitTestCase {
         $this->assertSame( '#000000', $opts['link_color'] );
         $this->assertSame( '#666666', $opts['description_text_color'] );
         $this->assertSame( '#ff0000', $opts['link_hover_color'] );
+    }
+
+    // =========================================================================
+    // Tab-rekisteri
+    // =========================================================================
+
+    /**
+     * Puhdista wizard-asetukset jokaisen testin jälkeen.
+     */
+    public function tearDown(): void {
+        delete_option( 'tjobs_tab_order' );
+        delete_option( 'tjobs_tab_enabled' );
+        parent::tearDown();
+    }
+
+    /**
+     * Testaa oletusjärjestys: kaikki viisi välilehteä oikeassa järjestyksessä.
+     */
+    public function test_tab_registry_default_order() {
+        delete_option( 'tjobs_tab_order' );
+        delete_option( 'tjobs_tab_enabled' );
+
+        $tabs = tjobs_get_tab_registry();
+
+        $this->assertIsArray( $tabs );
+        $this->assertCount( 5, $tabs );
+
+        $keys = array_keys( $tabs );
+        $this->assertSame( array( 'announcement', 'general', 'videos', 'details', 'questions' ), $keys );
+    }
+
+    /**
+     * Testaa tallennettu järjestys: järjestys heijastuu rekisteristä.
+     */
+    public function test_tab_registry_saved_order() {
+        update_option( 'tjobs_tab_order', array( 'questions', 'announcement', 'general', 'videos', 'details' ) );
+        update_option( 'tjobs_tab_enabled', array( 'announcement', 'general', 'videos', 'details', 'questions' ) );
+
+        $tabs = tjobs_get_tab_registry();
+        $keys = array_keys( $tabs );
+
+        $this->assertSame( 'questions', $keys[0] );
+        $this->assertSame( 'announcement', $keys[1] );
+    }
+
+    /**
+     * Testaa whitelist-validointi: tuntemattomat avaimet hylätään.
+     */
+    public function test_tab_registry_whitelist_validation() {
+        update_option( 'tjobs_tab_order', array( 'announcement', 'invalid_tab', 'general', 'questions' ) );
+        update_option( 'tjobs_tab_enabled', array( 'announcement', 'general', 'questions', 'malicious_key' ) );
+
+        $tabs = tjobs_get_tab_registry();
+        $keys = array_keys( $tabs );
+
+        $this->assertNotContains( 'invalid_tab', $keys );
+        $this->assertNotContains( 'malicious_key', $keys );
+        $this->assertContains( 'announcement', $keys );
+        $this->assertContains( 'general', $keys );
+    }
+
+    /**
+     * Testaa, että pakollisia välilehtiä ei voi poistaa käytöstä.
+     */
+    public function test_required_tabs_always_included() {
+        // Yritetään poistaa pakolliset välilehdet käytöstä
+        update_option( 'tjobs_tab_enabled', array( 'general', 'videos' ) );
+
+        $tabs = tjobs_get_tab_registry();
+        $keys = array_keys( $tabs );
+
+        $this->assertContains( 'announcement', $keys, 'announcement on pakollinen, ei voi poistaa' );
+        $this->assertContains( 'questions', $keys, 'questions on pakollinen, ei voi poistaa' );
+    }
+
+    /**
+     * Testaa, että disabled-välilehtiä ei palauteta (paitsi pakolliset).
+     */
+    public function test_disabled_tabs_excluded() {
+        update_option( 'tjobs_tab_order', array( 'announcement', 'general', 'videos', 'details', 'questions' ) );
+        update_option( 'tjobs_tab_enabled', array( 'announcement', 'questions' ) ); // vain pakolliset
+
+        $tabs = tjobs_get_tab_registry();
+        $keys = array_keys( $tabs );
+
+        $this->assertNotContains( 'general', $keys );
+        $this->assertNotContains( 'videos', $keys );
+        $this->assertNotContains( 'details', $keys );
+        $this->assertContains( 'announcement', $keys );
+        $this->assertContains( 'questions', $keys );
+    }
+
+    /**
+     * Testaa, että filtteri toimii.
+     */
+    public function test_tab_registry_filter() {
+        delete_option( 'tjobs_tab_order' );
+        delete_option( 'tjobs_tab_enabled' );
+
+        // Lisätään testi-filtteri joka poistaa videos-välilehden
+        add_filter( 'tjobs_tab_registry', function( $tabs ) {
+            unset( $tabs['videos'] );
+            return $tabs;
+        } );
+
+        $tabs = tjobs_get_tab_registry();
+
+        remove_all_filters( 'tjobs_tab_registry' );
+
+        $this->assertArrayNotHasKey( 'videos', $tabs );
+        $this->assertArrayHasKey( 'announcement', $tabs );
     }
 }
